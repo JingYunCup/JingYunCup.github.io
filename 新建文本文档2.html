@@ -161,7 +161,13 @@
             justify-content: flex-start; /* 左对齐按钮 */
         }
 
-
+        @media (max-width: 1024px) {
+            .checkbox-container .checkbox {
+                flex: 1 1 45%; /* 小屏幕每行最多2个 */
+                max-width: 45%; /* 限制宽度 */
+                min-width: 45%; /* 保证对齐 */
+            }
+        }
         /* 手机端适配 */
         @media (max-width: 768px) {
             .container {
@@ -170,11 +176,6 @@
             }
             .frame {
                 width: 90%;
-            }
-            .checkbox-container .checkbox {
-                flex: 1 1 45%; /* 小屏幕每行最多2个 */
-                max-width: 45%; /* 限制宽度 */
-                min-width: 45%; /* 保证对齐 */
             }
             .fight-container {
                 flex-direction: column; /* 垂直排列 */
@@ -194,6 +195,14 @@
             .button-container {
                 flex-direction: column; /* 手机端垂直排列 */
                 align-items: stretch; /* 按钮占满整行 */
+            }
+        }
+        /* 针对极小屏幕设备（例如手机竖屏） */
+        @media (max-width: 480px) {
+            .checkbox-container .checkbox {
+                flex: 1 1 100%; /* 竖屏设备时每行一个 */
+                max-width: 100%;
+                min-width: 100%;
             }
         }
         textarea{
