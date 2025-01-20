@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>京云杯#3分数计算器-beta</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+        }
+        .frame {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 30%;
+        }
+        h3 {
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .label {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        .select, .input, .checkbox, .button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .select {
+            padding: 10px;
+        }
+        .checkbox {
+            width: auto;
+        }
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .divider {
+            height: 5px;
+            background-color: #aaa;
+            margin: 10px 0;
+        }
+        .horizontal {
+            display: flex;
+            justify-content: space-between;
+        }
+        .horizontal .label {
+            width: 45%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Side -->
+        <div class="frame">
+            <h3>开局设置</h3>
+            <div class="label">开局分队</div>
+            <select id="team" class="select">
+                <option>因地制宜分队</option>
+                <option>魂灵护送分队</option>
+                <option>博文广记分队</option>
+                <option>蓝图测绘分队</option>
+            </select>
+
+            <div class="label">开局藏品</div>
+            <select id="buffers" class="select">
+                <option>希望时代的涂鸦</option>
+                <option>死仇时代的恨意</option>
+                <option>美愿时代的留恋</option>
+            </select>
+
+            <div class="label">罗德之门</div>
+            <select id="door" class="select">
+                <option>持有罗德之门</option>
+                <option>未持有罗德之门</option>
+            </select>
+
+            <div class="divider"></div>
+
+            <h3>紧急作战</h3>
+            <div class="label">紧急作战</div>
+            <select id="emergency" class="select">
+                <option>机动队</option>
+                <option>混沌</option>
+                <option>神出鬼没</option>
+            </select>
+
+            <div class="checkbox">
+                <label><input type="checkbox" id="perfect"> 无漏通关</label>
+            </div>
+            <button class="button" onclick="addEmergency()">添加紧急作战</button>
+
+            <div class="divider"></div>
+
+            <h3>领袖作战</h3>
+            <div class="label">领袖作战</div>
+            <select id="boss" class="select">
+                <option>紧急授课</option>
+                <option>思维矫正</option>
+                <option>朝谒</option>
+            </select>
+
+            <div class="checkbox">
+                <label><input type="checkbox" id="chaotic"> 思绪混乱</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" id="roll"> 滚动先祖</label>
+            </div>
+            <div class="checkbox">
+                <label><input type="checkbox" id="superbig"> 终结的实相</label>
+            </div>
+            <button class="button" onclick="addBoss()">添加领袖作战</button>
+
+            <div class="divider"></div>
+
+            <h3>比赛计时</h3>
+            <div class="horizontal">
+                <div class="label">计时器</div>
+                <input class="input" type="text" id="timer" value="000:00" disabled>
+            </div>
+            <button class="button" id="startStopButton" onclick="startStopTimer()">开始</button>
+            <button class="button" onclick="resetTimer()">清零（适用于烧水重开）</button>
+            <button class="button" onclick="resetHalfTime()">重置（适用于三层重开）</button>
+        </div>
+
+        <!-- Right Side -->
+        <div class="frame">
+            <h3>特殊加分</h3>
+            <div class="horizontal">
+                <div class="label">商店取钱</div>
+                <input id="money" class="input" type="number" placeholder="输入金额">
+            </div>
+            <div class="horizontal">
+                <div class="label">藏品数量</div>
+                <input id="item" class="input" type="number" placeholder="输入数量">
+            </div>
+            <div class="horizontal">
+                <div class="label">六星临时</div>
+                <input id="six" class="input" type="number" placeholder="输入数量">
+            </div>
+            <div class="horizontal">
+                <div class="label">五星临时</div>
+                <input id="five" class="input" type="number" placeholder="输入数量">
+            </div>
+            <div class="horizontal">
+                <div class="label">四星临时</div>
+                <input id="four" class="input" type="number" placeholder="输入数量">
+            </div>
+            <div class="horizontal">
+                <div class="label">击杀领袖</div>
+                <input id="extra" class="input" type="number" placeholder="输入数量">
+            </div>
+
+            <div class="divider"></div>
+
+            <h3>计分板</h3>
+            <textarea id="counter" class="input" rows="10" placeholder="显示计分板" disabled></textarea>
+
+            <div class="horizontal">
+                <button class="button" onclick="deleteLastItem()">删除最后一项</button>
+            </div>
+
+            <div class="horizontal">
+                <div class="label">结算分</div>
+                <input id="submit" class="input" type="number" placeholder="输入分数">
+                <button class="button" onclick="confirmScore()">结算!</button>
+            </div>
+
+            <textarea id="end" class="input" rows="5" placeholder="结束结果" disabled></textarea>
+            <button class="button" onclick="clearAll()">归零!</button>
+        </div>
+    </div>
+
+    <script>
+        let isRunning = false;
+        let isConfirmed = true;
+        let timerInterval;
+        let isHalfed = "000:00"; // To store halved time
+        let previousTime = 0; // To store previous full time
+
+        let emergencyScores = {};
+        let bossScores = {};
+
+        function startStopTimer() {
+            if (isRunning) {
+                clearInterval(timerInterval);
+                document.getElementById('startStopButton').textContent = '开始';
+            } else {
+                timerInterval = setInterval(updateTimer, 1000);
+                document.getElementById('startStopButton').textContent = '暂停';
+            }
+            isRunning = !isRunning;
+        }
+
+        function updateTimer() {
+            let timer = document.getElementById('timer');
+            let timeParts = timer.value.split(':');
+            let minutes = parseInt(timeParts[0]);
+            let seconds = parseInt(timeParts[1]);
+
+            if (seconds === 59) {
+                seconds = 0;
+                minutes++;
+            } else {
+                seconds++;
+            }
+
+            timer.value = minutes.toString().padStart(3, '0') + ':' + seconds.toString().padStart(2, '0');
+        }
+
+        function resetTimer() {
+            document.getElementById('timer').value = '000:00';
+            clearInterval(timerInterval);
+            isRunning = false;
+            document.getElementById('startStopButton').textContent = '开始';
+        }
+
+        function resetHalfTime() {
+            // Stop the timer and halve the time
+            let currentTime = document.getElementById('timer').value;
+            let timeParts = currentTime.split(':');
+            let minutes = parseInt(timeParts[0]);
+            let seconds = parseInt(timeParts[1]);
+            let totalSeconds = minutes * 60 + seconds;
+            previousTime = totalSeconds;
+            let halvedTime = Math.floor(totalSeconds / 2);
+            let newMinutes = Math.floor(halvedTime / 60);
+            let newSeconds = halvedTime % 60;
+
+            isHalfed = newMinutes.toString().padStart(3, '0') + ":" + newSeconds.toString().padStart(2, '0');
+            document.getElementById('timer').value = isHalfed;
+        }
+
+        function addEmergency() {
+            const emergencyDict = {
+                "机动队": 42,
+                "混沌": 28,
+                "神出鬼没": 56,
+                "争议频发": 70,
+                "建制": 70,
+                "莱茵卫士": 70,
+                "谋求共识": 14,
+                "神圣的渴求": 21,
+                "“外道”": 42,
+                "洞天福地": 70,
+                "洞天福地 (预示之谜)": 140
+            };
+
+            const emergencyType = document.getElementById('emergency').value;
+            const basicScore = emergencyDict[emergencyType];
+            let finalScore = basicScore;
+            let label = emergencyType;
+
+            if (document.getElementById('perfect').checked) {
+                finalScore = Math.floor(basicScore / 7 * 10);
+                label += " 无漏";
+            }
+
+            if (!emergencyScores[emergencyType] || emergencyScores[emergencyType] < finalScore) {
+                emergencyScores[emergencyType] = finalScore;
+                insertCounter(label, finalScore);
+            }
+        }
+
+        function addBoss() {
+            const bossDict = {
+                "紧急授课": 0,
+                "思维矫正": 50,
+                "朝谒": 50,
+                "魂灵朝谒": 50,
+                "圣城": 0,
+                "授法": 400,
+                "不容拒绝": 300
+            };
+
+            const bossType = document.getElementById('boss').value;
+            const baseScore = bossDict[bossType];
+            let finalScore = baseScore;
+            let label = bossType;
+
+            if (document.getElementById('chaotic').checked) {
+                finalScore += 30;
+                label += " 混乱";
+            }
+            if (document.getElementById('roll').checked) {
+                finalScore += 70;
+                label += " 滚动";
+            }
+            if (document.getElementById('superbig').checked) {
+                finalScore += 70;
+                label += " 实相";
+            }
+
+            if (!bossScores[bossType] || bossScores[bossType] < finalScore) {
+                bossScores[bossType] = finalScore;
+                insertCounter(label, finalScore);
+            }
+        }
+
+        function insertCounter(label, score) {
+            let counterText = document.getElementById('counter').value;
+            counterText += `${label} ${score}分\n`;
+            document.getElementById('counter').value = counterText;
+            refreshScore(score);
+        }
+
+        function refreshScore(score) {
+            let currentScore = parseInt(document.getElementById('end').value.split(':')[1]) || 0;
+            currentScore += score;
+            document.getElementById('end').value = "当前得分:" + currentScore;
+        }
+
+        function deleteLastItem() {
+            let counterText = document.getElementById('counter').value;
+            let lines = counterText.split('\n');
+            if (lines.length > 1) {
+                let lastLine = lines.pop();
+                let lastScore = parseInt(lastLine.split(' ')[1]);
+                document.getElementById('counter').value = lines.join('\n');
+                refreshScore(-lastScore);
+            }
+        }
+
+        function confirmScore() {
+            const team = document.getElementById('team').value;
+            const buffer = document.getElementById('buffers').value;
+            const door = document.getElementById('door').value;
+            const money = document.getElementById('money').value;
+            const item = document.getElementById('item').value;
+            const six = document.getElementById('six').value;
+            const five = document.getElementById('five').value;
+            const four = document.getElementById('four').value;
+            const extra = document.getElementById('extra').value;
+            const submit = document.getElementById('submit').value;
+
+            let totalScore = parseInt(submit) || 0;
+
+            // 1) 商店取钱处理
+            if (money > 60) {
+                let deducted = (money - 60) * 50;
+                totalScore -= deducted;
+                insertCounter(`商店取钱${money}个 -${deducted}分`, -deducted);
+            }
+
+            // 2) 藏品数量
+            if (item > 0) {
+                let itemScore = item * 5;
+                totalScore += itemScore;
+                insertCounter(`获得藏品${item}个 +${itemScore}分`, itemScore);
+            }
+
+            // 3) 罗德之门扣分处理
+            if (door === "持有罗德之门") {
+                let hasCompleted = document.getElementById('counter').value.includes("结局作战");
+                let isSuperBigChecked = document.getElementById('superbig').checked;
+
+                if (!hasCompleted || !isSuperBigChecked) {
+                    totalScore -= 1000;
+                    insertCounter("持有罗德之门 -1000分", -1000);
+                }
+            }
+
+            // 4) 时间超时处理
+            let timeLimit = 120 * 60; // 初始时间120分钟
+            let extraTime = 0;
+            if (document.getElementById('roll').checked) extraTime += 30;
+            if (document.getElementById('superbig').checked) extraTime += 30;
+            if (document.getElementById('chaotic').checked) extraTime += 30;
+            if (document.getElementById('superbig').checked) extraTime += 30;
+            timeLimit += extraTime * 60;
+
+            let currentTime = document.getElementById('timer').value.split(':');
+            let minutes = parseInt(currentTime[0]);
+            let seconds = parseInt(currentTime[1]);
+            let passedTime = (minutes * 60 + seconds);
+            let overtime = passedTime - timeLimit;
+            if (overtime > 0) {
+                if (overtime <= 300) {
+                    totalScore -= Math.floor(overtime / 5) * 50;
+                } else if (overtime <= 600) {
+                    totalScore -= Math.floor(overtime / 5) * 100;
+                } else {
+                    totalScore -= Math.floor(overtime / 5) * 500;
+                }
+                insertCounter(`时间超时${overtime}秒`, -overtime);
+            }
+
+            // 更新结算分
+            insertCounter(`结算分: ${totalScore}`, totalScore);
+        }
+
+        function clearAll() {
+            document.getElementById('counter').value = '';
+            document.getElementById('end').value = "当前得分:0";
+            resetTimer();
+            isConfirmed = true;
+        }
+    </script>
+</body>
+</html>
