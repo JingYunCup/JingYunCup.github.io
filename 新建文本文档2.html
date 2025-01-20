@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-cn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,17 +14,19 @@
         .container {
             display: flex;
             justify-content: space-around;
-            flex-wrap: wrap; /* Allow elements to wrap on smaller screens */
+            flex-wrap: wrap;
             padding: 20px;
         }
         .frame {
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            width: 45%; /* Default width for larger screens */
-            margin-bottom: 20px; /* Space between frames */
+            padding: 20px; /* 添加内边距 */
+            width: 45%;
+            margin-bottom: 20px;
+            box-sizing: border-box; /* 确保内边距包含在宽度计算内 */
         }
+
         h3 {
             text-align: center;
             font-weight: 600;
@@ -41,12 +43,71 @@
             margin-bottom: 15px;
             border-radius: 5px;
             border: 1px solid #ccc;
-        }
-        .select {
-            padding: 10px;
+            min-width: 120px;
+            box-sizing: border-box; /* 包含内边距和边框 */
         }
         .checkbox {
-            width: auto;
+            display: inline-block;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        .checkbox:hover {
+            background-color: #f0f0f0;
+        }
+        .checkbox-container {
+            display: flex;
+            flex-wrap: wrap; /* 允许换行 */
+            gap: 10px; /* 多选框之间的间距 */
+            justify-content: space-around; /* 均匀分布，避免对齐问题 */
+        }
+
+        .checkbox-container .checkbox {
+            flex: 1 1 calc(25% - 10px); /* 确保每行最多容纳4个 */
+            max-width: calc(25% - 10px); /* 限制最大宽度 */
+            min-width: calc(25% - 10px); /* 保证最小宽度 */
+            box-sizing: border-box; /* 包含内边距和边框 */
+            text-align: center;
+        }
+        .checkbox-container .checkbox:only-child {
+            flex: 1 1 100%; /* 独占整行时占满整行 */
+            max-width: 100%; /* 确保宽度适应整行 */
+            min-width: 100%;
+        }
+        .input-container {
+            display: flex;
+            align-items: baseline; /* 垂直居中对齐 */
+            gap: 10px; /* 添加间距 */
+            margin-bottom: 15px;
+        }
+
+        .input-container .label {
+            flex: 0 0 30%; /* 固定宽度 */
+            height: 36px;
+            text-align: right; /* 右对齐 */
+            white-space: nowrap; /* 防止换行 */
+            line-height: 36px; /* 设置与输入框一致的行高 */
+        }
+
+        .input-container .input {
+            flex: 1 1 70%; /* 占用剩余宽度 */
+            height: 36px; /* 确保输入框高度一致 */
+            padding: 5px; /* 添加内边距 */
+            box-sizing: border-box; /* 包含内边距和边框 */
+        }
+
+
+        .input-grid {
+            display: flex;
+            flex-wrap: wrap; /* 允许换行 */
+            gap: 10px; /* 控制输入框间距 */
+        }
+
+        .input-grid .input-container {
+            flex: 1 1 calc(50% - 10px); /* 宽屏时每行两个 */
+            max-width: calc(50% - 10px); /* 最大宽度 */
+            box-sizing: border-box; /* 包含内边距和边框 */
         }
         .button {
             background-color: #4CAF50;
@@ -62,24 +123,81 @@
             background-color: #aaa;
             margin: 10px 0;
         }
-        .horizontal {
-            display: flex;
-            justify-content: space-between;
+        .inputspecial{
+            width: 100%;
+            font-weight: bold;
+            font-size: 20px;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box; /* 包含内边距和边框 */
         }
-        .horizontal .label {
-            width: 45%;
+        .fight-container {
+            display: flex;
+            flex-direction: row; /* 默认左右排列 */
+            justify-content: space-between;
+            align-items: stretch; /* 子元素高度一致 */
+            gap: 20px; /* 间距 */
+            position: relative;
         }
 
-        /* Mobile-friendly layout adjustments */
+        .fight-container .frame {
+            flex: 1 1 45%; /* 每部分占45%的宽度 */
+            box-sizing: border-box;
+        }
+
+        .divider-vertical {
+            width: 5px; /* 分隔线宽度 */
+            background-color: #aaa;
+            height: auto;
+            align-self: stretch;
+            margin: 0 10px;
+        }
+        /* 右侧按钮容器 */
+        .button-container {
+            display: flex;
+            gap: 10px; /* 按钮之间的间距 */
+            justify-content: flex-start; /* 左对齐按钮 */
+        }
+
+
+        /* 手机端适配 */
         @media (max-width: 768px) {
             .container {
-                flex-direction: column; /* Stack the frames vertically */
-                align-items: center; /* Center the frames */
+                flex-direction: column;
+                align-items: center;
             }
             .frame {
-                width: 90%; /* Increase width of frames on mobile */
-                margin-bottom: 20px; /* Add space between frames */
+                width: 90%;
             }
+            .checkbox-container .checkbox {
+                flex: 1 1 45%; /* 小屏幕每行最多2个 */
+                max-width: 45%; /* 限制宽度 */
+                min-width: 45%; /* 保证对齐 */
+            }
+            .fight-container {
+                flex-direction: column; /* 垂直排列 */
+            }
+            .fight-container .frame {
+                width: 100%;
+            }
+            .divider-vertical {
+                width: 100%; /* 改为横向分隔线 */
+                height: 5px;
+                margin: 10px 0;
+            }
+            .input-grid .input-container {
+                flex: 1 1 100%; /* 窄屏时每行一个 */
+                max-width: 100%; /* 最大宽度改为整行 */
+            }
+            .button-container {
+                flex-direction: column; /* 手机端垂直排列 */
+                align-items: stretch; /* 按钮占满整行 */
+            }
+        }
+        textarea{
+            resize: none;
         }
     </style>
 </head>
@@ -123,64 +241,96 @@
                 <option>持有罗德之门</option>
             </select>
 
-            <div class="checkbox">
-                <label><input type="checkbox" id="roll"> 滚动先祖</label>
-            </div>
 
-            <div class="checkbox">
-                <label><input type="checkbox" id="Bebel"> 巴别塔誓言</label>
-            </div>
 
-            <div class="checkbox">
-                <label><input type="checkbox" id="Anasa"> 阿纳萨羯磨</label>
-            </div>
-
-            <div class="checkbox">
-                <label><input type="checkbox" id="superbig"> 终结的实相</label>
+            <div class="checkbox-container">
+                <label class="checkbox"><input type="checkbox" id="roll"> 滚动先祖</label>
+                <label class="checkbox"><input type="checkbox" id="superbig"> 终结的实相</label>
+                <label class="checkbox"><input type="checkbox" id="babel"> 巴别塔誓言</label>
+                <label class="checkbox"><input type="checkbox" id="anasa"> 阿纳萨羯磨</label>
             </div>
 
             <div class="divider"></div>
 
-            <h3>紧急作战</h3>
-            <div class="label">紧急作战</div>
-            <select id="emergency" class="select">
-                <option>机动队</option>
-                <option>混沌</option>
-                <option>神出鬼没</option>
-                <option>争议贫乏</option>
-                <option>建制</option>
-                <option>莱茵卫士</option>
-                <option>谋求共识</option>
-                <option>神圣的渴求</option>
-                <option>“外道”</option>
-                <option>洞天福地</option>
-                <option>洞天福地(预示之谜)</option>
-            </select>
+            <div class="fight-container">
+                <!-- 紧急作战 -->
+                <div class="frame">
+                    <h3>紧急作战</h3>
+                    <div class="label">紧急作战</div>
+                    <select id="emergency" class="select">
+                        <option>机动队</option>
+                        <option>混沌</option>
+                        <option>神出鬼没</option>
+                        <option>争议频发</option>
+                        <option>建制</option>
+                        <option>莱茵卫士</option>
+                        <option>谋求共识</option>
+                        <option>神圣的渴求</option>
+                        <option>“外道”</option>
+                        <option>洞天福地</option>
+                        <option>洞天福地 (预示之谜)</option>
+                    </select>
+                    <div class="checkbox-container">
+                        <label class="checkbox"><input type="checkbox" id="perfect"> 无漏通关</label>
+                    </div>
+                    <button class="button" onclick="addEmergency()">添加紧急作战</button>
+                </div>
 
-            <div class="checkbox">
-                <label><input type="checkbox" id="perfect"> 无漏通关</label>
+                <!-- 分隔线 -->
+                <div class="divider-vertical"></div>
+
+                <!-- 领袖作战 -->
+                <div class="frame">
+                    <h3>领袖作战</h3>
+                    <div class="label">领袖作战</div>
+                    <select id="boss" class="select">
+                        <option>紧急授课</option>
+                        <option>思维矫正</option>
+                        <option>朝谒</option>
+                        <option>魂灵朝谒</option>
+                        <option>圣城</option>
+                        <option>授法</option>
+                        <option>不容拒绝</option>
+                    </select>
+                    <div class="checkbox-container">
+                        <label class="checkbox"><input type="checkbox" id="chaotic"> 思绪混乱</label>
+                    </div>
+                    <button class="button" onclick="addBoss()">添加领袖作战</button>
+                </div>
             </div>
-            <button class="button" onclick="addEmergency()">添加紧急作战</button>
 
             <div class="divider"></div>
-
-            <h3>领袖作战</h3>
-            <div class="label">领袖作战</div>
-            <select id="boss" class="select">
-                <option>紧急授课</option>
-                <option>思维矫正</option>
-                <option>朝谒</option>
-                <option>魂灵朝谒</option>
-                <option>圣城</option>
-                <option>授法</option>
-                <option>不容拒绝</option>
-            </select>
-
-            <div class="checkbox">
-                <label><input type="checkbox" id="chaotic"> 思绪混乱</label>
+            <h3>特殊加分</h3>
+            <div class="input-grid">
+                <div class="input-container">
+                    <div class="label">商店取钱</div>
+                    <input id="money" class="input" type="number" placeholder="输入金额">
+                </div>
+                <div class="input-container">
+                    <div class="label">藏品数量</div>
+                    <input id="item" class="input" type="number" placeholder="输入数量">
+                </div>
+                <div class="input-container">
+                    <div class="label">六星临时</div>
+                    <input id="six" class="input" type="number" placeholder="输入数量">
+                </div>
+                <div class="input-container">
+                    <div class="label">五星临时</div>
+                    <input id="five" class="input" type="number" placeholder="输入数量">
+                </div>
+                <div class="input-container">
+                    <div class="label">四星临时</div>
+                    <input id="four" class="input" type="number" placeholder="输入数量">
+                </div>
+                <div class="input-container">
+                    <div class="label">击杀领袖</div>
+                    <input id="extra" class="input" type="number" placeholder="输入数量">
+                </div>
             </div>
-            <button class="button" onclick="addBoss()">添加领袖作战</button>
+
         </div>
+
+
 
         <!-- Right Side -->
         <div class="frame">
@@ -188,43 +338,19 @@
             <h3>比赛计时</h3>
             <div class="horizontal">
                 <div class="label">计时器</div>
-                <input class="input" type="text" id="timer" value="0:00" disabled>
+                <input class="inputspecial" type="text" id="timer" value="0:00" disabled>
             </div>
             <button class="button" id="startStopButton" onclick="startStopTimer()">开始</button>
-            <button class="button" onclick="resetTimer()">清零（适用于烧水重开）</button>
-            <button class="button" onclick="resetHalfTime()">重置（适用于三层重开）</button>
+            <div class="button-container">
+                <button class="button" onclick="resetTimer()">清零（适用于烧水重开）</button>
+                <button class="button" onclick="resetHalfTime()">重置（适用于三层重开）</button>
+            </div>
 
-            <div class="divider"></div>
-            <h3>特殊加分</h3>
-            <div class="horizontal">
-                <div class="label">商店取钱</div>
-                <input id="money" class="input" type="number" placeholder="输入金额">
-            </div>
-            <div class="horizontal">
-                <div class="label">藏品数量</div>
-                <input id="item" class="input" type="number" placeholder="输入数量">
-            </div>
-            <div class="horizontal">
-                <div class="label">六星临时</div>
-                <input id="six" class="input" type="number" placeholder="输入数量">
-            </div>
-            <div class="horizontal">
-                <div class="label">五星临时</div>
-                <input id="five" class="input" type="number" placeholder="输入数量">
-            </div>
-            <div class="horizontal">
-                <div class="label">四星临时</div>
-                <input id="four" class="input" type="number" placeholder="输入数量">
-            </div>
-            <div class="horizontal">
-                <div class="label">击杀领袖</div>
-                <input id="extra" class="input" type="number" placeholder="输入数量">
-            </div>
 
             <div class="divider"></div>
 
             <h3>计分板</h3>
-            <textarea id="counter" class="input" rows="20" placeholder="显示计分板" disabled></textarea>
+            <textarea id="counter" class="input" rows="20" placeholder="" disabled></textarea>
 
             <div class="horizontal">
                 <button class="button" onclick="deleteLastItem()">删除最后一项</button>
@@ -236,20 +362,21 @@
                 <button class="button" onclick="confirmScore()">结算!</button>
             </div>
 
-            <textarea id="end" class="input" rows="5" placeholder="结束结果" disabled></textarea>
+            <textarea id="end" class="inputspecial" rows="1" placeholder="当前分数：0" disabled></textarea>
             <button class="button" onclick="clearAll()">归零!</button>
         </div>
     </div>
 
     <script>
+        let ispass2 = false;
+        let ispass4 = false;
+        let ispass5 = false;
         let isRunning = false;
         let isConfirmed = true;
         let timerInterval;
-        let isHalfed = "000:00"; // To store halved time
+        let isHalfed = "0:00"; // To store halved time
         let previousTime = 0; // To store previous full time
 
-        let emergencyScores = {};
-        let bossScores = {};
 
         function startStopTimer() {
             if (isRunning) {
@@ -275,17 +402,21 @@
                 seconds++;
             }
 
-            timer.value = minutes.toString().padStart(3, '0') + ':' + seconds.toString().padStart(2, '0');
+            timer.value = minutes.toString() + ':' + seconds.toString().padStart(2, '0');
         }
 
         function resetTimer() {
-            document.getElementById('timer').value = '000:00';
+            document.getElementById('timer').value = isHalfed;
             clearInterval(timerInterval);
             isRunning = false;
             document.getElementById('startStopButton').textContent = '开始';
         }
 
         function resetHalfTime() {
+            if(isHalfed!=="0:00"){
+                alert("三层重开仅能生效一次");
+                return;
+            }
             // Stop the timer and halve the time
             let currentTime = document.getElementById('timer').value;
             let timeParts = currentTime.split(':');
@@ -297,8 +428,11 @@
             let newMinutes = Math.floor(halvedTime / 60);
             let newSeconds = halvedTime % 60;
 
-            isHalfed = newMinutes.toString().padStart(3, '0') + ":" + newSeconds.toString().padStart(2, '0');
+            isHalfed = newMinutes.toString() + ":" + newSeconds.toString().padStart(2, '0');
             document.getElementById('timer').value = isHalfed;
+            clearInterval(timerInterval);
+            isRunning = false;
+            document.getElementById('startStopButton').textContent = '开始';
         }
 
         function addEmergency() {
@@ -326,10 +460,7 @@
                 label += " 无漏";
             }
 
-            if (!emergencyScores[emergencyType] || emergencyScores[emergencyType] < finalScore) {
-                emergencyScores[emergencyType] = finalScore;
-                insertCounter(label, finalScore);
-            }
+            insertCounter(label, finalScore);
         }
 
         function addBoss() {
@@ -344,8 +475,7 @@
             };
 
             const bossType = document.getElementById('boss').value;
-            const baseScore = bossDict[bossType];
-            let finalScore = baseScore;
+            let finalScore = bossDict[bossType];
             let label = bossType;
 
             if (document.getElementById('chaotic').checked) {
@@ -361,14 +491,12 @@
                 label += " 实相";
             }
 
-            if (!bossScores[bossType] || bossScores[bossType] < finalScore) {
-                bossScores[bossType] = finalScore;
-                insertCounter(label, finalScore);
-            }
+            insertCounter(label, finalScore);
         }
 
         function insertCounter(label, score) {
             let counterText = document.getElementById('counter').value;
+            let values=counterText.split('\n');
             counterText += `${label} ${score}分\n`;
             document.getElementById('counter').value = counterText;
             refreshScore(score);
