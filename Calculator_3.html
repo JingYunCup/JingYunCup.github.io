@@ -10,12 +10,31 @@
             margin: 0;
             padding: 0;
             background-color: #f5f5f5;
+            align-items: center;
         }
         .container {
             display: flex;
             justify-content: space-around;
             flex-wrap: wrap;
             padding: 20px;
+        }
+        @media (min-width: 1080px) {
+            html, body {
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                display: flex;
+                justify-content: center; /* 水平居中 */
+                align-items: center; /* 垂直居中 */
+            }
+
+            .container {
+                transform: scale(0.88); /* 缩放比例 */
+                width: 100%;
+                height: auto;
+                box-sizing: border-box; /* 包含内边距 */
+            }
+
         }
         .frame {
             background-color: white;
