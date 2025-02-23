@@ -628,12 +628,13 @@
                 isConfirmed++;
                 insertCounter("持有罗德之门", -1000);
             }
-            let timeLimit = 120 * 60;
+            let timeLimit = 90 * 60;
             let extraTime = 0;
             if (roll) extraTime += 30;
             if (superbig) extraTime += 30;
             if (anasa) extraTime += 30;
             if (babel) extraTime += 30;
+            if (door === "持有罗德之门") extraTime += 30;
             timeLimit += extraTime * 60;
 
             let currentTime = document.getElementById('timer').value.split(':');
