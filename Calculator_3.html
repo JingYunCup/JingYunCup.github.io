@@ -509,7 +509,7 @@
                 "朝谒": 50,
                 "魂灵朝谒": 50,
                 "圣城": 0,
-                "授法": 400,
+                "授法": 500,
                 "不容拒绝": 300
             };
 
@@ -606,7 +606,7 @@
             const babel = document.getElementById('babel').checked;
             const anasa = document.getElementById('anasa').checked;
             if (item > 0) {
-                let itemScore = item * 5;
+                let itemScore = item * 3;
                 insertCounter(`获得藏品${item}个 +${itemScore}分`, itemScore);
                 isConfirmed++;
             }
@@ -649,9 +649,7 @@
             }
             let multiple=0.5;
             if(buffer==="美愿时代的留恋")multiple=0.65;
-            if(buffer==="死仇时代的恨意")multiple=0.4;
-            if(buffer==="希望时代的涂鸦")multiple=0.4;
-            if(buffer==="未获取")multiple=0.4;
+            if(team==="点刺成锭分队")multiple=0.5
             insertCounter(`结算分${submit}分`,Math.floor(submit*multiple));
         }
 
