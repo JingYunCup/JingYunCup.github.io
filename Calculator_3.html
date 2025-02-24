@@ -648,11 +648,13 @@
                 isConfirmed++;
             }
             let multiple=0.5;
+            let Correctionpoints=100
             if(buffer==="美愿时代的留恋")multiple=0.65;
             if(team==="点刺成锭分队")multiple=0.5
-            insertCounter(`结算分${submit}分`,Math.floor(submit*multiple));
+            if(team==="点刺成锭分队")Correctionpoints=-100
+            if(team==="蓝图测绘分队")Correctionpoints=-100
+            insertCounter(`结算分${submit}分`,Math.floor(submit*multiple+Correctionpoints));
         }
-
         function clearAll() {
             document.getElementById('counter').value = '';
             document.getElementById('end').value = "当前得分:0";
