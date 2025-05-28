@@ -363,8 +363,11 @@
                     <div class="label">紧急数量</div>
                     <input id="jinji" class="input" type="number" placeholder="输入数量">
                 </div>
-            </div>
-
+                    <div class="input-container">
+                    <div class="label">隐藏数量</div>
+                    <input id="yincang" class="input" type="number" placeholder="输入数量">
+                 </div>
+              </div>
         </div>
 
 
@@ -605,6 +608,7 @@
             const four = parseInt(document.getElementById('four').value)||0;
             const extra = parseInt(document.getElementById('extra').value)||0;
             const jinji = parseInt(document.getElementById('jinji').value)||0;
+            const yincang = parseInt(document.getElementById('yincang').value)||0;
             const submit = parseInt(document.getElementById('submit').value)||0;
             const superbig = document.getElementById('superbig').checked;
             const roll = document.getElementById('roll').checked;
@@ -620,6 +624,10 @@
                 insertCounter(`紧急数量${jinji}个+${jinjiscore}分`, jinjiscore);
                 isConfirmed++;
             }
+            if(yingcang>0){
+                let jinjiscore = yincang*20;
+                insertCounter(`隐藏数量${yincang}个+${yingcangscore}分`, yingcangscore);
+                isConfirmed++;
              if(six+five+four>0){
                 let tempscore = six*20+five*10+four*5;
                 insertCounter(`临时招募干员${six+five+four}名`, tempscore);
