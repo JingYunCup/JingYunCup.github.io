@@ -615,18 +615,18 @@
             const babel = document.getElementById('babel').checked;
             const anasa = document.getElementById('anasa').checked;
             if (item > 0) {
-                let itemScore = item * 3;
+                let itemScore = item * 5;
                 insertCounter(`获得藏品${item}个 +${itemScore}分`, itemScore);
                 isConfirmed++;
             }
             if(jinji>0){
-                let jinjiscore = jinji*5;
+                let jinjiscore = jinji* 5;
                 insertCounter(`紧急数量${jinji}个+${jinjiscore}分`, jinjiscore);
                 isConfirmed++;
             }
-            if(yingcang>0){
-                let jinjiscore = yincang*20;
-                insertCounter(`隐藏数量${yincang}个+${yingcangscore}分`, yingcangscore);
+            if(yincang>0){
+                let yincangscore = yincang* 20;
+                insertCounter(`隐藏数量${yincang}个+${yincangscore}分`, yincangscore);
                 isConfirmed++;
              if(six+five+four>0){
                 let tempscore = six*50+five*20+four*10;
