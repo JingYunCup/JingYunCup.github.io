@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>京云杯#3分数计算器-beta</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            align-items: center;
+        }
+        .container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+        @media (min-width: 1910px) {
+            html, body {
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                display: flex;
+                justify-content: center; /* 水平居中 */
+                align-items: center; /* 垂直居中 */
+            }
+
+            .container {
+                transform: scale(0.88); /* 缩放比例 */
+                width: 100%;
+                height: auto;
+                box-sizing: border-box; /* 包含内边距 */
+            }
+
+        }
+        .frame {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px; /* 添加内边距 */
+            width: 45%;
+            margin-bottom: 20px;
+            box-sizing: border-box; /* 确保内边距包含在宽度计算内 */
+        }
+
+        h3 {
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .label {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        .select, .input, .checkbox, .button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            min-width: 120px;
+            box-sizing: border-box; /* 包含内边距和边框 */
+        }
+        .checkbox {
+            display: inline-block;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        .checkbox:hover {
+            background-color: #f0f0f0;
+        }
+        .checkbox-container {
+            display: flex;
+            flex-wrap: wrap; /* 允许换行 */
+            gap: 10px; /* 多选框之间的间距 */
+            justify-content: space-around; /* 均匀分布，避免对齐问题 */
+        }
+
+        .checkbox-container .checkbox {
+            flex: 1 1 calc(25% - 10px); /* 确保每行最多容纳4个 */
+            max-width: calc(25% - 10px); /* 限制最大宽度 */
+            min-width: calc(25% - 10px); /* 保证最小宽度 */
+            box-sizing: border-box; /* 包含内边距和边框 */
+            text-align: center;
+        }
+        .checkbox-container .checkbox:only-child {
+            flex: 1 1 100%; /* 独占整行时占满整行 */
+            max-width: 100%; /* 确保宽度适应整行 */
+            min-width: 100%;
+        }
+        .input-container {
+            display: flex;
+            align-items: baseline; /* 垂直居中对齐 */
+            gap: 10px; /* 添加间距 */
+            margin-bottom: 15px;
+        }
+
+        .input-container .label {
+            flex: 0 0 30%; /* 固定宽度 */
+            height: 36px;
+            text-align: right; /* 右对齐 */
+            white-space: nowrap; /* 防止换行 */
+            line-height: 36px; /* 设置与输入框一致的行高 */
+        }
+
+        .input-container .input {
+            flex: 1 1 70%; /* 占用剩余宽度 */
+            height: 36px; /* 确保输入框高度一致 */
+            padding: 5px; /* 添加内边距 */
+            box-sizing: border-box; /* 包含内边距和边框 */
+        }
+
+
+        .input-grid {
+            display: flex;
+            flex-wrap: wrap; /* 允许换行 */
+            gap: 10px; /* 控制输入框间距 */
+        }
+
+        .input-grid .input-container {
+            flex: 1 1 calc(50% - 10px); /* 宽屏时每行两个 */
+            max-width: calc(50% - 10px); /* 最大宽度 */
+            box-sizing: border-box; /* 包含内边距和边框 */
+        }
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .divider {
+            height: 5px;
+            background-color: #aaa;
+            margin: 10px 0;
+        }
+        .inputspecial{
+            width: 100%;
+            font-weight: bold;
+            font-size: 20px;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box; /* 包含内边距和边框 */
+        }
+        .fight-container {
+            display: flex;
+            flex-direction: row; /* 默认左右排列 */
+            justify-content: space-between;
+            align-items: stretch; /* 子元素高度一致 */
+            gap: 20px; /* 间距 */
+            position: relative;
+        }
+
+        .fight-container .frame {
+            flex: 1 1 45%; /* 每部分占45%的宽度 */
+            box-sizing: border-box;
+            border-radius: 0; /*紧密排列时不再显示边框*/
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0);
+        }
+
+        .divider-vertical {
+            width: 5px; /* 分隔线宽度 */
+            background-color: #aaa;
+            height: auto;
+            align-self: stretch;
+            margin: 0 10px;
+        }
+        /* 右侧按钮容器 */
+        .button-container {
+            display: flex;
+            gap: 10px; /* 按钮之间的间距 */
+            justify-content: flex-start; /* 左对齐按钮 */
+        }
+        /*此宽度以下藏品设置框不能一排显示四个*/
+        @media (max-width: 1440px) {
+            .checkbox-container .checkbox {
+                flex: 1 1 45%; /* 小屏幕每行最多2个 */
+                max-width: 45%; /* 限制宽度 */
+                min-width: 45%; /* 保证对齐 */
+            }
+        }
+        /*此宽度以下按钮、添加作战、输入框不能一排显示两个*/
+        @media (max-width: 1080px) {
+            .button-container {
+                flex-direction: column; /* 手机端垂直排列 */
+                align-items: stretch; /* 按钮占满整行 */
+            }
+            .fight-container {
+                flex-direction: column; /* 垂直排列 */
+            }
+            .fight-container .frame {
+                width: 100%;
+            }
+            .divider-vertical {
+                width: 100%; /* 改为横向分隔线 */
+                height: 5px;
+                margin: 10px 0;
+            }
+            .input-grid .input-container {
+                flex: 1 1 100%; /* 窄屏时每行一个 */
+                max-width: 100%; /* 最大宽度改为整行 */
+            }
+        }
+        /* 此宽度以下只能显示一列UI */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .frame {
+                width: 90%;
+            }
+        }
+        /* 此宽度以下藏品选择每行只能显示一个 */
+        @media (max-width: 480px) {
+            .checkbox-container .checkbox {
+                flex: 1 1 100%; /* 竖屏设备时每行一个 */
+                max-width: 100%;
+                min-width: 100%;
+            }
+        }
+        textarea{
+            resize: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Side -->
+        <div class="frame">
+            <h3>状态设置</h3>
+            <div class="label">开局分队</div>
+            <select id="team" class="select">
+                <option>因地制宜分队</option>
+                <option>魂灵护送分队</option>
+                <option>博文广记分队</option>
+                <option>蓝图测绘分队</option>
+                <option>指挥分队</option>
+                <option>集群分队</option>
+                <option>后勤分队</option>
+                <option>矛头分队</option>
+                <option>突击战术分队</option>
+                <option>堡垒战术分队</option>
+                <option>远程战术分队</option>
+                <option>破坏战术分队</option>
+                <option>高规格分队</option>
+                <option>点刺成锭分队</option>
+                <option>拟态学者分队</option>
+                <option>异想天开分队</option>
+                <option>专业人士分队</option>
+            </select>
+
+            <div class="label">开局藏品</div>
+            <select id="buffers" class="select">
+                <option>希望时代的涂鸦</option>
+                <option>死仇时代的恨意</option>
+                <option>美愿时代的留恋</option>
+                <option>未获取</option>
+            </select>
+
+            <div class="label">罗德之门</div>
+            <select id="door" class="select">
+                <option>未持有罗德之门</option>
+                <option>持有罗德之门</option>
+            </select>
+
+
+
+            <div class="checkbox-container">
+                <label class="checkbox"><input type="checkbox" id="roll"> 滚动先祖</label>
+                <label class="checkbox"><input type="checkbox" id="superbig"> 终结的实相</label>
+                <label class="checkbox"><input type="checkbox" id="babel"> 巴别塔誓言</label>
+                <label class="checkbox"><input type="checkbox" id="anasa"> 阿纳萨羯磨</label>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="fight-container">
+                <!-- 紧急作战 -->
+                <div class="frame">
+                    <h3>紧急作战</h3>
+                    <div class="label">紧急作战</div>
+                    <select id="emergency" class="select">
+                        <option>机动队</option>
+                        <option>混沌</option>
+                        <option>神出鬼没</option>
+                        <option>争议频发</option>
+                        <option>建制</option>
+                        <option>莱茵卫士</option>
+                        <option>谋求共识</option>
+                        <option>神圣的渴求</option>
+                        <option>“外道”</option>
+                        <option>洞天福地</option>
+                        <option>洞天福地 (预示之谜)</option>
+                    </select>
+                    <div class="checkbox-container">
+                        <label class="checkbox"><input type="checkbox" id="perfect"> 无漏通关</label>
+                    </div>
+                    <button class="button" onclick="addEmergency()">添加紧急作战</button>
+                </div>
+
+                <!-- 分隔线 -->
+                <div class="divider-vertical"></div>
+
+                <!-- 领袖作战 -->
+                <div class="frame">
+                    <h3>领袖作战</h3>
+                    <div class="label">领袖作战</div>
+                    <select id="boss" class="select">
+                        <option>紧急授课</option>
+                        <option>思维矫正</option>
+                        <option>朝谒</option>
+                        <option>魂灵朝谒</option>
+                        <option>圣城</option>
+                        <option>授法</option>
+                        <option>不容拒绝</option>
+                    </select>
+                    <div class="checkbox-container">
+                        <label class="checkbox"><input type="checkbox" id="chaotic"> 思绪混乱</label>
+                    </div>
+                    <button class="button" onclick="addBoss()">添加领袖作战</button>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+            <h3>特殊加分</h3>
+            <div class="input-grid">
+                <div class="input-container">
+                    <div class="label">商店取钱</div>
+                    <input id="money" class="input" type="number" placeholder="输入金额">
+                </div>
+                <div class="input-container">
+                    <div class="label">藏品数量</div>
+                    <input id="item" class="input" type="number" placeholder="输入数量">
+                </div>
+                <div class="input-container">
+                    <div class="label">六星临时</div>
+                    <input id="six" class="input" type="number" placeholder="输入数量">
+                </div>
+                <div class="input-container">
+                    <div class="label">五星临时</div>
+                    <input id="five" class="input" type="number" placeholder="输入数量">
+                </div>
+                <div class="input-container">
+                    <div class="label">四星临时</div>
+                    <input id="four" class="input" type="number" placeholder="输入数量">
+                </div>
+                <div class="input-container">
+                    <div class="label">击杀领袖</div>
+                    <input id="extra" class="input" type="number" placeholder="输入数量">
+                      </div>
+                    <div class="input-container">
+                    <div class="label">紧急数量</div>
+                    <input id="jinji" class="input" type="number" placeholder="输入数量">
+                </div>
+            </div>
+
+        </div>
+
+
+
+        <!-- Right Side -->
+        <div class="frame">
+
+            <h3>比赛计时</h3>
+            <div class="horizontal">
+                <div class="label">计时器</div>
+                <input class="inputspecial" type="text" id="timer" value="0:00" disabled>
+            </div>
+            <button class="button" id="startStopButton" onclick="startStopTimer()">开始</button>
+            <div class="button-container">
+                <button class="button" onclick="resetTimer()">清零（适用于烧水重开）</button>
+                <button class="button" onclick="resetHalfTime()">重置（适用于三层重开）</button>
+            </div>
+
+
+            <div class="divider"></div>
+
+            <h3>计分板</h3>
+            <textarea id="counter" class="input" rows="20" placeholder="" disabled></textarea>
+
+            <div class="horizontal">
+                <button class="button" onclick="deleteLastItem()">删除最后一项</button>
+            </div>
+
+            <div class="horizontal">
+                <div class="label">结算分</div>
+                <input id="submit" class="input" type="number" placeholder="输入分数">
+                <button class="button" onclick="confirmScore()">结算!</button>
+            </div>
+
+            <textarea id="end" class="inputspecial" rows="1" placeholder="当前得分:0" disabled></textarea>
+            <button class="button" onclick="clearAll()">归零!</button>
+        </div>
+    </div>
+
+    <script>
+        let ispass2 = false;
+        let ispass4 = false;
+        let ispass5 = false;
+        let isRunning = false;
+        let isConfirmed = 1;
+        let timerInterval;
+        let isHalfed = "0:00"; // To store halved time
+
+
+        function startStopTimer() {
+            if (isRunning) {
+                clearInterval(timerInterval);
+                document.getElementById('startStopButton').textContent = '开始';
+            } else {
+                timerInterval = setInterval(updateTimer, 1000);
+                document.getElementById('startStopButton').textContent = '暂停';
+            }
+            isRunning = !isRunning;
+        }
+
+        function updateTimer() {
+            let timer = document.getElementById('timer');
+            let timeParts = timer.value.split(':');
+            let minutes = parseInt(timeParts[0]);
+            let seconds = parseInt(timeParts[1]);
+
+            if (seconds === 59) {
+                seconds = 0;
+                minutes++;
+            } else {
+                seconds++;
+            }
+
+            timer.value = minutes.toString() + ':' + seconds.toString().padStart(2, '0');
+        }
+
+        function resetTimer() {
+            document.getElementById('timer').value = isHalfed;
+            clearInterval(timerInterval);
+            isRunning = false;
+            document.getElementById('startStopButton').textContent = '开始';
+        }
+
+        function resetHalfTime() {
+            if(isHalfed!=="0:00"){
+                alert("三层重开仅能生效一次");
+                return;
+            }
+            // Stop the timer and halve the time
+            let currentTime = document.getElementById('timer').value;
+            let timeParts = currentTime.split(':');
+            let minutes = parseInt(timeParts[0]);
+            let seconds = parseInt(timeParts[1]);
+            let totalSeconds = minutes * 60 + seconds;
+            let halvedTime = Math.floor(totalSeconds / 2);
+            let newMinutes = Math.floor(halvedTime / 60);
+            let newSeconds = halvedTime % 60;
+
+            isHalfed = newMinutes.toString() + ":" + newSeconds.toString().padStart(2, '0');
+            document.getElementById('timer').value = isHalfed;
+            clearInterval(timerInterval);
+            isRunning = false;
+            document.getElementById('startStopButton').textContent = '开始';
+        }
+
+        function addEmergency() {
+            if(isConfirmed!==1){
+                alert("请勿在结算后添加作战");
+                return;
+            }
+            const emergencyDict = {
+                "机动队": 42,
+                "混沌": 28,
+                "神出鬼没": 56,
+                "争议频发": 70,
+                "建制": 70,
+                "莱茵卫士": 70,
+                "谋求共识": 14,
+                "神圣的渴求": 21,
+                "“外道”": 42,
+                "洞天福地": 70,
+                "洞天福地 (预示之谜)": 140
+            };
+
+            const emergencyType = document.getElementById('emergency').value;
+            const basicScore = emergencyDict[emergencyType];
+            let finalScore = basicScore;
+            let label = emergencyType;
+
+            if (document.getElementById('perfect').checked) {
+                finalScore = Math.floor(basicScore / 7 * 10);
+                label += " 无漏";
+            }
+
+            insertCounter(label, finalScore);
+        }
+
+        function addBoss() {
+            if(isConfirmed!==1){
+                alert("请勿在结算后添加作战");
+                return;
+            }
+            const bossDict = {
+                "紧急授课": 0,
+                "思维矫正": 50,
+                "朝谒": 50,
+                "魂灵朝谒": 50,
+                "圣城": 0,
+                "授法": 500,
+                "不容拒绝": 300
+            };
+
+            const bossType = document.getElementById('boss').value;
+            if (bossType ==="思维矫正"||bossType ==="朝谒"||bossType ==="魂灵朝谒")ispass2=true;
+            if (bossType ==="授法")ispass4=true;
+            if (bossType ==="不容拒绝")ispass5=true;
+            let finalScore = bossDict[bossType];
+            let label = bossType;
+
+            if (document.getElementById('chaotic').checked) {
+                finalScore += 30;
+                label += " 混乱";
+            }
+            if (document.getElementById('roll').checked) {
+                finalScore += 70;
+                label += " 滚动";
+            }
+            if (document.getElementById('superbig').checked) {
+                finalScore += 70;
+                label += " 实相";
+            }
+
+            insertCounter(label, finalScore);
+        }
+
+        function insertCounter(label, score) {
+            let counterText = document.getElementById('counter').value;
+            let prefix = label.split(" ")[0];
+            let lines=counterText.split('\n');
+            let isprinted=true;
+            for(let i=0;i<lines.length;i++){
+                let prefixlist=lines[i].split(" ");
+                let end = prefixlist.length;
+                if (prefixlist[0] === prefix) {
+                    isprinted=false;
+                    if (parseInt(prefixlist[end - 1].substring(0, prefixlist[end - 1].length - 1)) < score) {
+                        refreshScore(-parseInt(prefixlist[end - 1].substring(0, prefixlist[end - 1].length - 1)));
+                        lines.splice(i, 1);
+                        isprinted = true;
+                        break;
+                    }
+                }
+            }
+            counterText=lines.join("\n");
+            if(isprinted){
+                counterText += `${label} ${score}分\n`;
+                refreshScore(score);
+            }
+            document.getElementById('counter').value = counterText;
+        }
+
+        function refreshScore(score) {
+            let currentScore = parseInt(document.getElementById('end').value.split(':')[1])||0;
+            currentScore += score;
+            document.getElementById('end').value = "当前得分:" + currentScore;
+        }
+
+        function deleteLastItem() {
+            for(let times=0;times<isConfirmed;times++) {
+                let counterText = document.getElementById('counter').value;
+                let lines = counterText.split('\n');
+                if (lines.length === 0) {
+                    return;
+                }
+                lines.pop();
+                let lastLine = lines.pop();
+                prefix = lastLine.split(" ");
+                let lastScore = parseInt(prefix[prefix.length - 1].substr(0, prefix[prefix.length - 1].length - 1));
+                document.getElementById('counter').value = lines.join('\n');
+                if (lines.length !== 0) document.getElementById('counter').value += "\n";
+                refreshScore(-lastScore);
+            }
+            isConfirmed=1;
+        }
+
+        function confirmScore() {
+            if(isConfirmed!==1){
+                alert("请勿重复结算");
+                return;
+            }
+            const team = document.getElementById('team').value;
+            const buffer = document.getElementById('buffers').value;
+            const door = document.getElementById('door').value;
+            const money = parseInt(document.getElementById('money').value)||0;
+            const item = parseInt(document.getElementById('item').value)||0;
+            const six = parseInt(document.getElementById('six').value)||0;
+            const five = parseInt(document.getElementById('five').value)||0;
+            const four = parseInt(document.getElementById('four').value)||0;
+            const extra = parseInt(document.getElementById('extra').value)||0;
+            const jinji = parseInt(document.getElementById('jinji').value)||0;
+            const submit = parseInt(document.getElementById('submit').value)||0;
+            const superbig = document.getElementById('superbig').checked;
+            const roll = document.getElementById('roll').checked;
+            const babel = document.getElementById('babel').checked;
+            const anasa = document.getElementById('anasa').checked;
+            if (item > 0) {
+                let itemScore = item * 3;
+                insertCounter(`获得藏品${item}个 +${itemScore}分`, itemScore);
+                isConfirmed++;
+            }
+            if(jinji>0){
+                let jinjiscore = jinji*5;
+                insertCounter(`紧急数量${jinji}个+${jinjiscore}分`, jinjiscore);
+                isConfirmed++;
+            }
+             if(six+five+four>0){
+                let tempscore = six*20+five*10+four*5;
+                insertCounter(`临时招募干员${six+five+four}名`, tempscore);
+                isConfirmed++;
+            }
+            if(extra>0){
+                insertCounter(`不容拒绝击杀领袖单位${extra}个`, extra*100);
+                isConfirmed++;
+            }
+            if (money > 60) {
+                let deducted = (money - 60) * 50;
+                insertCounter(`商店取钱${money}个`, -deducted);
+                isConfirmed++;
+            }
+            if ((door === "持有罗德之门")&&(!ispass2 || !ispass4 || !ispass5 || !superbig)){
+                isConfirmed++;
+                insertCounter("持有罗德之门", -1000);
+            }
+            let timeLimit = 90 * 60;
+            let extraTime = 0;
+            if (roll) extraTime += 30;
+            if (superbig) extraTime += 30;
+            if (anasa) extraTime += 30;
+            if (babel) extraTime += 30;
+            if (door === "持有罗德之门") extraTime += 30;
+            timeLimit += extraTime * 60;
+
+            let currentTime = document.getElementById('timer').value.split(':');
+            let overtime = parseInt(currentTime[0]) * 60 + parseInt(currentTime[1]) - timeLimit -300;
+            if (overtime > 0) {
+                let punishscore=Math.floor(overtime/300)*50;
+                if(overtime>1800)punishscore+=Math.floor((overtime-1800)/300)*50;
+                if(overtime>3600)punishscore+=Math.floor((overtime-3600)/300)*400;
+                overtime=Math.floor(overtime/60)+5;
+                insertCounter(`超时${overtime}分钟`, -punishscore);
+                isConfirmed++;
+            }
+            let multiple=0.5;
+            let Correctionpoints=100
+            if(buffer==="美愿时代的留恋")multiple=0.65;
+            if(team==="点刺成锭分队")multiple=0.5
+            if(team==="点刺成锭分队")Correctionpoints=0
+            if(team==="蓝图测绘分队")Correctionpoints=0
+            insertCounter(`结算分${submit}分`,Math.floor(submit*multiple+Correctionpoints));
+        }
+        function clearAll() {
+            document.getElementById('counter').value = '';
+            document.getElementById('end').value = "当前得分:0";
+            ispass2 = false;
+            ispass4 = false;
+            ispass5 = false;
+            isRunning = false;
+            isConfirmed = 1;
+            clearInterval(timerInterval);
+            isHalfed = "0:00";
+        }
+    </script>
+</body>
+</html>
