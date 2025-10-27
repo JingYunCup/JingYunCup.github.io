@@ -268,17 +268,17 @@
                     <h3>紧急作战</h3>
                     <div class="label">紧急作战</div>
                     <select id="emergency" class="select">
-                        <option>机动队</option>
-                        <option>混沌</option>
-                        <option>神出鬼没</option>
-                        <option>争议频发</option>
-                        <option>建制</option>
-                        <option>莱茵卫士</option>
-                        <option>谋求共识</option>
-                        <option>神圣的渴求</option>
-                        <option>“外道”</option>
-                        <option>洞天福地</option>
-                        <option>洞天福地 (预示之谜)</option>
+                        <option>峥嵘战功</option>
+                        <option>赶场戏班</option>
+                        <option>青山不语</option>
+                        <option>离域检查</option>
+                        <option>薄礼一份</option>
+                        <option>邙山镇地方志</option>
+                        <option>不成烟火</option>
+                        <option>炎灼</option>
+                        <option>人镇</option>
+                        <option>借力打力</option>
+                        <option>越山海</option>
                     </select>
                     <div class="checkbox-container">
                         <label class="checkbox"><input type="checkbox" id="perfect"> 无漏通关</label>
@@ -294,16 +294,18 @@
                     <h3>领袖作战</h3>
                     <div class="label">领袖作战</div>
                     <select id="boss" class="select">
-                        <option>紧急授课</option>
-                        <option>思维矫正</option>
-                        <option>朝谒</option>
-                        <option>魂灵朝谒</option>
-                        <option>圣城</option>
-                        <option>授法</option>
-                        <option>不容拒绝</option>
+                        <option>夕蛾忆</option>
+                        <option>仁义武</option>
+                        <option>求道</option>
+                        <option>破岁阵祀</option>
+                        <option>天数将易</option>
+                        <option>昔字如烟</option>
+                        <option>往昔难忆</option>
+                        <option>忘生玲珑-往昔难忆</option>
+                        <option>末狩</option>
                     </select>
                     <div class="checkbox-container">
-                        <label class="checkbox"><input type="checkbox" id="chaotic"> 思绪混乱</label>
+                        <label class="checkbox"><input type="checkbox" id="chaotic"> 无漏通关</label>
                     </div>
                     <button class="button" onclick="addBoss()">添加领袖作战</button>
                 </div>
@@ -332,10 +334,6 @@
                     <div class="label">四星临时</div>
                     <input id="four" class="input" type="number" placeholder="输入数量">
                 </div>
-                <div class="input-container">
-                    <div class="label">击杀领袖</div>
-                    <input id="extra" class="input" type="number" placeholder="输入数量">
-                      </div>
                     <div class="input-container">
                     <div class="label">紧急数量</div>
                     <input id="jinji" class="input" type="number" placeholder="输入数量">
@@ -453,17 +451,17 @@
                 return;
             }
             const emergencyDict = {
-                "机动队": 42,
-                "混沌": 28,
-                "神出鬼没": 56,
-                "争议频发": 70,
-                "建制": 70,
-                "莱茵卫士": 70,
-                "谋求共识": 14,
-                "神圣的渴求": 21,
-                "“外道”": 42,
-                "洞天福地": 70,
-                "洞天福地 (预示之谜)": 140
+                "峥嵘战功": 20,
+                "赶场戏班": 20,
+                "青山不语": 30,
+                "离域检查": 20,
+                "薄礼一份": 20,
+                "邙山镇地方志": 30,
+                "不成烟火": 25,
+                "炎灼": 30,
+                "人镇": 30,
+                "借力打力": 35,
+                "越山海": 50
             };
 
             const emergencyType = document.getElementById('emergency').value;
@@ -472,7 +470,7 @@
             let label = emergencyType;
 
             if (document.getElementById('perfect').checked) {
-                finalScore = Math.floor(basicScore / 7 * 10);
+                finalScore = Math.floor(basicScore / 5 * 10);
                 label += " 无漏";
             }
 
@@ -485,34 +483,22 @@
                 return;
             }
             const bossDict = {
-                "紧急授课": 0,
-                "思维矫正": 50,
-                "朝谒": 50,
-                "魂灵朝谒": 50,
-                "圣城": 0,
-                "授法": 500,
-                "不容拒绝": 300
+                "夕蛾忆": 0,
+                "仁义武": 0,
+                "求道": 0,
+                "破岁阵祀": 50,
+                "天数将易": 150,
+                "昔字如烟": 100,
+                "往昔难忆": 200,
+                "忘生玲珑-往昔难忆": 300,
+                "末狩": 300,
             };
-
-            const bossType = document.getElementById('boss').value;
-            if (bossType ==="思维矫正"||bossType ==="朝谒"||bossType ==="魂灵朝谒")ispass2=true;
-            if (bossType ==="授法")ispass4=true;
-            if (bossType ==="不容拒绝")ispass5=true;
-            let finalScore = bossDict[bossType];
-            let label = bossType;
 
             if (document.getElementById('chaotic').checked) {
                 finalScore += 30;
-                label += " 混乱";
+                label += " 无漏";
             }
-            if (document.getElementById('roll').checked) {
-                finalScore += 70;
-                label += " 滚动";
-            }
-            if (document.getElementById('superbig').checked) {
-                finalScore += 70;
-                label += " 实相";
-            }
+          if (document.getElementById('chaotic').checked)
 
             insertCounter(label, finalScore);
         }
@@ -580,40 +566,32 @@
             const six = parseInt(document.getElementById('six').value)||0;
             const five = parseInt(document.getElementById('five').value)||0;
             const four = parseInt(document.getElementById('four').value)||0;
-            const extra = parseInt(document.getElementById('extra').value)||0;
             const jinji = parseInt(document.getElementById('jinji').value)||0;
             const submit = parseInt(document.getElementById('submit').value)||0;
-            const superbig = document.getElementById('superbig').checked;
-            const roll = document.getElementById('roll').checked;
-            const babel = document.getElementById('babel').checked;
-            const anasa = document.getElementById('anasa').checked;
             if (item > 0) {
-                let itemScore = item * 3;
+                let itemScore = item * 5;
                 insertCounter(`获得藏品${item}个 +${itemScore}分`, itemScore);
                 isConfirmed++;
             }
             if(jinji>0){
-                let jinjiscore = jinji*5;
+                let jinjiscore = jinji*20;
                 insertCounter(`紧急数量${jinji}个+${jinjiscore}分`, jinjiscore);
                 isConfirmed++;
             }
-             if(six+five+four>0){
-                let tempscore = six*20+five*10+four*5;
-                insertCounter(`临时招募干员${six+five+four}名`, tempscore);
+            if (item ≥ 150) {
+                let itemScore = 750;
+                insertCounter(`获得藏品${item}个 +${itemScore}分`, itemScore);
                 isConfirmed++;
-            }
-            if(extra>0){
-                insertCounter(`不容拒绝击杀领袖单位${extra}个`, extra*100);
+                }
+             if(six+five+four>0){
+                let tempscore = six*50+five*20+four*10;
+                insertCounter(`临时招募干员${six+five+four}名`, tempscore);
                 isConfirmed++;
             }
             if (money > 60) {
                 let deducted = (money - 60) * 50;
                 insertCounter(`商店取钱${money}个`, -deducted);
                 isConfirmed++;
-            }
-            if ((door === "持有罗德之门")&&(!ispass2 || !ispass4 || !ispass5 || !superbig)){
-                isConfirmed++;
-                insertCounter("持有罗德之门", -1000);
             }
             let timeLimit = 90 * 60;
             let extraTime = 0;
@@ -634,12 +612,9 @@
                 insertCounter(`超时${overtime}分钟`, -punishscore);
                 isConfirmed++;
             }
-            let multiple=0.5;
-            let Correctionpoints=100
-            if(buffer==="美愿时代的留恋")multiple=0.65;
-            if(team==="点刺成锭分队")multiple=0.5
-            if(team==="点刺成锭分队")Correctionpoints=0
-            if(team==="蓝图测绘分队")Correctionpoints=0
+            let multiple=1;
+            if(team==="花团锦簇分队")multiple=0
+            if(team==="岁影回音分队")multiple=0
             insertCounter(`结算分${submit}分`,Math.floor(submit*multiple+Correctionpoints));
         }
         function clearAll() {
