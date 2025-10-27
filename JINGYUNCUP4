@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>京云杯#3分数计算器-beta</title>
+    <title>京云杯#4分数计算器-beta</title>
     <style>
         body {
             font-family: 'Microsoft YaHei', Arial, sans-serif;
@@ -241,47 +241,24 @@
             <h3>状态设置</h3>
             <div class="label">开局分队</div>
             <select id="team" class="select">
-                <option>因地制宜分队</option>
-                <option>魂灵护送分队</option>
-                <option>博文广记分队</option>
-                <option>蓝图测绘分队</option>
+                <option>高台突破分队</option>
+                <option>地面突破分队</option>
+                <option>游客分队</option>
+                <option>司岁台分队</option>
+                <option>天师符分队</option>
                 <option>指挥分队</option>
                 <option>集群分队</option>
                 <option>后勤分队</option>
-                <option>矛头分队</option>
                 <option>突击战术分队</option>
                 <option>堡垒战术分队</option>
                 <option>远程战术分队</option>
                 <option>破坏战术分队</option>
                 <option>高规格分队</option>
-                <option>点刺成锭分队</option>
-                <option>拟态学者分队</option>
-                <option>异想天开分队</option>
-                <option>专业人士分队</option>
+                <option>花团锦簇分队</option>
+                <option>棋行险着分队</option>
+                <option>岁影回音分队</option>
             </select>
 
-            <div class="label">开局藏品</div>
-            <select id="buffers" class="select">
-                <option>希望时代的涂鸦</option>
-                <option>死仇时代的恨意</option>
-                <option>美愿时代的留恋</option>
-                <option>未获取</option>
-            </select>
-
-            <div class="label">罗德之门</div>
-            <select id="door" class="select">
-                <option>未持有罗德之门</option>
-                <option>持有罗德之门</option>
-            </select>
-
-
-
-            <div class="checkbox-container">
-                <label class="checkbox"><input type="checkbox" id="roll"> 滚动先祖</label>
-                <label class="checkbox"><input type="checkbox" id="superbig"> 终结的实相</label>
-                <label class="checkbox"><input type="checkbox" id="babel"> 巴别塔誓言</label>
-                <label class="checkbox"><input type="checkbox" id="anasa"> 阿纳萨羯磨</label>
-            </div>
 
             <div class="divider"></div>
 
