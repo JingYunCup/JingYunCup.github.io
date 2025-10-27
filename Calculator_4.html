@@ -345,20 +345,7 @@
 
 
         <!-- Right Side -->
-        <div class="frame">
-
-            <h3>比赛计时</h3>
-            <div class="horizontal">
-                <div class="label">计时器</div>
-                <input class="inputspecial" type="text" id="timer" value="0:00" disabled>
-            </div>
-            <button class="button" id="startStopButton" onclick="startStopTimer()">开始</button>
-            <div class="button-container">
-                <button class="button" onclick="resetTimer()">清零（适用于烧水重开）</button>
-                <button class="button" onclick="resetHalfTime()">重置（适用于三层重开）</button>
-            </div>
-
-
+    
             <div class="divider"></div>
 
             <h3>计分板</h3>
@@ -378,72 +365,6 @@
             <button class="button" onclick="clearAll()">归零!</button>
         </div>
     </div>
-
-    <script>
-        let ispass2 = false;
-        let ispass4 = false;
-        let ispass5 = false;
-        let isRunning = false;
-        let isConfirmed = 1;
-        let timerInterval;
-        let isHalfed = "0:00"; // To store halved time
-
-
-        function startStopTimer() {
-            if (isRunning) {
-                clearInterval(timerInterval);
-                document.getElementById('startStopButton').textContent = '开始';
-            } else {
-                timerInterval = setInterval(updateTimer, 1000);
-                document.getElementById('startStopButton').textContent = '暂停';
-            }
-            isRunning = !isRunning;
-        }
-
-        function updateTimer() {
-            let timer = document.getElementById('timer');
-            let timeParts = timer.value.split(':');
-            let minutes = parseInt(timeParts[0]);
-            let seconds = parseInt(timeParts[1]);
-
-            if (seconds === 59) {
-                seconds = 0;
-                minutes++;
-            } else {
-                seconds++;
-            }
-
-            timer.value = minutes.toString() + ':' + seconds.toString().padStart(2, '0');
-        }
-
-        function resetTimer() {
-            document.getElementById('timer').value = isHalfed;
-            clearInterval(timerInterval);
-            isRunning = false;
-            document.getElementById('startStopButton').textContent = '开始';
-        }
-
-        function resetHalfTime() {
-            if(isHalfed!=="0:00"){
-                alert("三层重开仅能生效一次");
-                return;
-            }
-            // Stop the timer and halve the time
-            let currentTime = document.getElementById('timer').value;
-            let timeParts = currentTime.split(':');
-            let minutes = parseInt(timeParts[0]);
-            let seconds = parseInt(timeParts[1]);
-            let totalSeconds = minutes * 60 + seconds;
-            let halvedTime = Math.floor(totalSeconds / 2);
-            let newMinutes = Math.floor(halvedTime / 60);
-            let newSeconds = halvedTime % 60;
-
-            isHalfed = newMinutes.toString() + ":" + newSeconds.toString().padStart(2, '0');
-            document.getElementById('timer').value = isHalfed;
-            clearInterval(timerInterval);
-            isRunning = false;
-            document.getElementById('startStopButton').textContent = '开始';
-        }
 
         function addEmergency() {
             if(isConfirmed!==1){
@@ -591,25 +512,6 @@
             if (money > 60) {
                 let deducted = (money - 60) * 50;
                 insertCounter(`商店取钱${money}个`, -deducted);
-                isConfirmed++;
-            }
-            let timeLimit = 90 * 60;
-            let extraTime = 0;
-            if (roll) extraTime += 30;
-            if (superbig) extraTime += 30;
-            if (anasa) extraTime += 30;
-            if (babel) extraTime += 30;
-            if (door === "持有罗德之门") extraTime += 30;
-            timeLimit += extraTime * 60;
-
-            let currentTime = document.getElementById('timer').value.split(':');
-            let overtime = parseInt(currentTime[0]) * 60 + parseInt(currentTime[1]) - timeLimit -300;
-            if (overtime > 0) {
-                let punishscore=Math.floor(overtime/300)*50;
-                if(overtime>1800)punishscore+=Math.floor((overtime-1800)/300)*50;
-                if(overtime>3600)punishscore+=Math.floor((overtime-3600)/300)*400;
-                overtime=Math.floor(overtime/60)+5;
-                insertCounter(`超时${overtime}分钟`, -punishscore);
                 isConfirmed++;
             }
             let multiple=1;
