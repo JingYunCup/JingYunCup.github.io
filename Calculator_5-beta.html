@@ -485,7 +485,7 @@
             height: 100%;
             background: #fff;
             box-shadow: -4px 0 20px rgba(0,0,0,0.2);
-            transition: right .3s ease;
+            transition: right .3 ease;
             z-index: 1002;
             display: flex;
             flex-direction: column;
@@ -682,6 +682,9 @@
 
             <div class="label">违规扣分</div>
             <input id="penal" class="input" type="number" placeholder="输入分数">
+
+            <div class="label">零件数量</div>
+            <input id="parts" class="input" type="number" placeholder="输入数量">
 
             <h3>计分板</h3>
             <textarea id="counter" class="input" rows="20" placeholder="" disabled></textarea>
@@ -1062,6 +1065,7 @@
             var money = document.getElementById('money').value || '0';
             var submit = document.getElementById('submit').value || '0';
             var penal = document.getElementById('penal').value || '0';
+            var parts = document.getElementById('parts').value || '0';
             function chk(id){ return document.getElementById(id).checked ? '√' : '×'; }
             var now = new Date();
             function p2(n){ return (n<10?'0':'')+n; }
@@ -1079,6 +1083,7 @@
             content += '商店取钱(源石锭)：'+money+'\n';
             content += '结算分：'+submit+'\n';
             content += '违规扣分：'+penal+'\n';
+            content += '零件数量：'+parts+'\n';
             content += '特殊加分勾选：\n';
             content += '  沙盘α('+chk('alpha')+') 沙盘β('+chk('beta')+') 怦然信标('+chk('beacon')+')\n';
             content += '  非本家5-6星数量0('+chk('nonhome')+') 全程无实托邦('+chk('nomud')+') 全程追猎('+chk('allhunt')+')\n';
@@ -1091,12 +1096,12 @@
             content += end + '\n';
             var blob = new Blob([content], {type:'text/plain;charset=utf-8'});
             var a = document.createElement('a');
-            a.href = 网站.createObjectURL(blob);
+            a.href = URL.createObjectURL(blob);
             a.download = '海选成绩_'+player+'_'+now.getFullYear()+p2(now.getMonth()+1)+p2(now.getDate())+'.txt';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            网站.revokeObjectURL(a.href);
+            URL.revokeObjectURL(a.href);
         }
 </script>
 
