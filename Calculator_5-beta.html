@@ -79,7 +79,7 @@
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
-            transition: all .15s ease;
+            transition: all .15 ease;
             user-select: none;
             text-align: center;
             line-height: 1.3;
@@ -452,13 +452,100 @@
         textarea{
             resize: none;
         }
-    </style>
+    
+        /* 规则侧边栏 */
+        .rules-toggle {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 1001;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 22px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+        .rules-toggle:hover { background-color: #45a049; }
+        .rules-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            display: none;
+            z-index: 1000;
+        }
+        .rules-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 380px;
+            height: 100%;
+            background: #fff;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.2);
+            transition: right .3s ease;
+            z-index: 1002;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+        .rules-panel.open { right: 0; }
+        .rules-head {
+            padding: 16px 20px;
+            background: #4CAF50;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .rules-close {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 26px;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .rules-body {
+            padding: 16px 20px;
+            overflow-y: auto;
+            flex: 1;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #333;
+        }
+        .rules-body h4 {
+            margin: 16px 0 6px;
+            color: #2e7d32;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 4px;
+            font-size: 15px;
+        }
+        .rules-body ul { margin: 6px 0; padding-left: 18px; }
+        .rules-body li { margin: 4px 0; }
+        .rule-formula {
+            background: #f1f8f1;
+            border-left: 4px solid #4CAF50;
+            padding: 10px 12px;
+            border-radius: 4px;
+        }
+        .rules-note { color: #888; font-size: 12px; }
+
+</style>
 </head>
 <body>
     <div class="container">
         <!-- Left Side -->
         <div class="frame">
             <h3>状态设置</h3>
+            <div class="label">选手姓名</div>
+            <input id="player" class="input" type="text" placeholder="输入选手姓名">
+
             <div class="label">开局分队</div>
             <select id="team" class="select">
                 <option>本源研修分队</option>
@@ -610,7 +697,10 @@
             </div>
 
             <textarea id="end" class="inputspecial" rows="1" placeholder="当前得分:0" disabled></textarea>
-            <button class="button" onclick="clearAll()">归零!</button>
+            <div class="horizontal">
+                <button class="button" onclick="clearAll()">归零!</button>
+                <button class="button" onclick="exportResult()">导出成绩</button>
+            </div>
         </div>
     </div>
 
@@ -908,14 +998,18 @@
                 insertCounter(`商店取钱${money}个`, -deducted);
                 isConfirmed++;
             }
-            if (!mech && sixN > 0) {
-                let sixScore = 0;
-                if (sixN <= 3) sixScore = 500;
-                else if (sixN <= 6) sixScore = 200;
-                else if (sixN > 9) sixScore = -200;
-                if (sixScore !== 0) {
-                    insertCounter(`六星数量${sixN}个`, sixScore);
-                    isConfirmed++;
+            if (!mech) {
+                insertCounter("不抓取机械师", 300);
+                isConfirmed++;
+                if (sixN > 0) {
+                    let sixScore = 0;
+                    if (sixN <= 3) sixScore = 500;
+                    else if (sixN <= 6) sixScore = 200;
+                    else if (sixN > 9) sixScore = -200;
+                    if (sixScore !== 0) {
+                        insertCounter(`六星数量${sixN}个`, sixScore);
+                        isConfirmed++;
+                    }
                 }
             }
             if (alpha) { insertCounter("沙盘α", 80); isConfirmed++; }
@@ -947,6 +1041,122 @@
             document.getElementById('end').value = "当前得分:0";
             isConfirmed = 1;
         }
-    </script>
+    
+        function toggleRules() {
+            var p = document.getElementById('rulesPanel');
+            var o = document.getElementById('rulesOverlay');
+            if (p.classList.contains('open')) { closeRules(); }
+            else { p.classList.add('open'); o.style.display = 'block'; }
+        }
+        function closeRules() {
+            document.getElementById('rulesPanel').classList.remove('open');
+            document.getElementById('rulesOverlay').style.display = 'none';
+        }
+        function exportResult() {
+            var player = (document.getElementById('player').value || '').trim() || '选手7999';
+            var team = document.getElementById('team').value;
+            var counter = document.getElementById('counter').value;
+            var end = document.getElementById('end').value;
+            var mech = document.getElementById('mech').checked ? '是' : '否';
+            var sixN = document.getElementById('sixN').value || '0';
+            var money = document.getElementById('money').value || '0';
+            var submit = document.getElementById('submit').value || '0';
+            var penal = document.getElementById('penal').value || '0';
+            function chk(id){ return document.getElementById(id).checked ? '√' : '×'; }
+            var now = new Date();
+            function p2(n){ return (n<10?'0':'')+n; }
+            var time = now.getFullYear()+'-'+p2(now.getMonth()+1)+'-'+p2(now.getDate())+' '+p2(now.getHours())+':'+p2(now.getMinutes());
+            var content = '京云杯#5海选计算器 成绩导出\n';
+            content += '导出时间：'+time+'\n';
+            content += '--------------------------------\n';
+            content += '【选手信息】\n';
+            content += '选手姓名：'+player+'\n';
+            content += '开局分队：'+team+'\n';
+            content += '--------------------------------\n';
+            content += '【录入信息】\n';
+            content += '是否抓取机械师：'+mech+'\n';
+            content += '六星数量(含临时)：'+sixN+'\n';
+            content += '商店取钱(源石锭)：'+money+'\n';
+            content += '结算分：'+submit+'\n';
+            content += '违规扣分：'+penal+'\n';
+            content += '特殊加分勾选：\n';
+            content += '  沙盘α('+chk('alpha')+') 沙盘β('+chk('beta')+') 怦然信标('+chk('beacon')+')\n';
+            content += '  非本家5-6星数量0('+chk('nonhome')+') 全程无实托邦('+chk('nomud')+') 全程追猎('+chk('allhunt')+')\n';
+            content += '紧急加成：黑流地脉('+chk('heiliudi')+') 倾斜沙丘系('+chk('qingxie')+')\n';
+            content += '--------------------------------\n';
+            content += '【计分明细】\n';
+            content += (counter || '（空）');
+            if (counter && !counter.endsWith('\n')) content += '\n';
+            content += '--------------------------------\n';
+            content += end + '\n';
+            var blob = new Blob([content], {type:'text/plain;charset=utf-8'});
+            var a = document.createElement('a');
+            a.href = 网站.createObjectURL(blob);
+            a.download = '海选成绩_'+player+'_'+now.getFullYear()+p2(now.getMonth()+1)+p2(now.getDate())+'.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            网站.revokeObjectURL(a.href);
+        }
+</script>
+
+<!-- 规则侧边栏 -->
+<div id="rulesOverlay" class="rules-overlay" onclick="closeRules()"></div>
+<aside id="rulesPanel" class="rules-panel">
+    <div class="rules-head">
+        <span>海选分数参考</span>
+        <button class="rules-close" onclick="closeRules()">&times;</button>
+    </div>
+    <div class="rules-body">
+        <p class="rule-formula"><b>总分 = 结算分×0.3 + 特殊加分 + 关卡加分 + 特殊藏品加分 &minus; 违规分数</b><br><span class="rules-note">（多边贸易分队得分系数 ×0.9）</span></p>
+
+        <h4>特殊加分</h4>
+        <ul>
+            <li>六星抓取数量加分：<br>不抓取机械师 <b>+300</b><br>不抓取机械师且六星数量(含临时) ≤3 <b>+500</b>、≤6 <b>+200</b>、＞9 <b>&minus;200</b></li>
+            <li>全程追猎不换探测先锋且通关追猎13（如有追忆该层也需追猎）<b>+500</b></li>
+            <li>四职业队非本家五六星数量为0（不含临时，重辅需不抓机械师）<b>+300</b></li>
+            <li>文明开化分队 全程无实托邦（不含希望的沃土）<b>+200</b></li>
+        </ul>
+
+        <h4>关卡加分 · 非结局关卡</h4>
+        <ul>
+            <li><b>追猎关卡</b><br>二层 咩的朋友/一视同仁 <b>+20</b>，外显尖牙 <b>+30</b><br>三层 哀悼铁腕/赤金厄运 <b>+50</b>，冰冷流亡 <b>+40</b><br>四层 "闹乐"/"纵怒"/"灭身" <b>+50</b>（如持有追忆仅获取一次加分）</li>
+            <li><b>各层紧急关卡</b>（每层仅取最高分）<br>三层 预算否决/生存习性/黑色逆流 <b>+40</b>，辟路行进/趁火打劫/焦土之家 <b>+30</b><br>四层 未来见闻 <b>+100</b>，其他 <b>+80</b><br>五层 物欲遮天/恶意讨薪/送别仪式/彼处水如酒 <b>+100</b>，一步之遥/丛林法则/过度繁殖 <b>+80</b><br>六层 同域共存 <b>+200</b>，命运共享 <b>+150</b></li>
+            <li><b>无效验尸</b>（仅获取一次，取最高分）：三层通关 <b>+100</b>，四层通关 <b>+80</b>，五层通关 <b>+50</b></li>
+        </ul>
+
+        <h4>关卡加分 · 结局关卡</h4>
+        <ul>
+            <li>永无安宁（普通一结局）<b>+0</b></li>
+            <li>痛苦将息（追猎一结局）<b>+600</b>（漏怪+500）</li>
+            <li>混沌源阶理论（二结局）<b>+500</b>（漏怪+400）</li>
+            <li>畸症（三结局）击杀玻利瓦尔，症结之核通关 <b>+700</b>（漏怪+600）；生吃玻利瓦尔，症结之核通关 <b>+400</b>；追猎额外 <b>+100</b></li>
+        </ul>
+
+        <h4>特殊藏品加分</h4>
+        <ul>
+            <li>沙盘&alpha; <b>+80</b>，沙盘&beta; <b>+100</b>，怦然信标 <b>+100</b></li>
+        </ul>
+
+        <h4>实拓邦加分</h4>
+        <ul>
+            <li>黑流地脉（大狗年代）分数 <b>×2</b></li>
+            <li>倾斜沙丘（沙尘暴）/去温栏（冰冻）/易碎同盟（扣血）/停止点（气压）分数 <b>×1.5</b></li>
+            <li class="rules-note">非结局关卡如漏怪则不获得加分（漏怪不触发实拓邦额外加分）</li>
+        </ul>
+
+        <h4>注意事项</h4>
+        <ul>
+            <li>1. 商店提取源石锭需≤40，每超出1源石锭 <b>&minus;500</b> 分</li>
+            <li>2. 第一把禁用开局襁褓，违规直接判负</li>
+            <li>3. 禁用果腹：单藏品出现不抓取可 <b>+15</b> 补偿（仅第一次）；失与得/不期而遇强制获取不能使用效果，违规一次 <b>&minus;200</b>；主动获取并使用总分计为 0 分</li>
+            <li>4. 进入第二层且未移动前，可申请一次重开并更换特勤分队烧水</li>
+            <li>5. 未达成海选要求扣分（仅顺利通关三结局触发）：<br>通关时三削弱藏（击坠神明/湮没光明/焚毁文明）每少持有 <b>&minus;500</b><br>仅持单沙盘且未通过二结局 <b>&minus;1000</b><br>六层命运所指每使用一个削弱藏 <b>&minus;500</b></li>
+        </ul>
+        <p class="rules-note">（规则待更新）</p>
+    </div>
+</aside>
+<button class="rules-toggle" onclick="toggleRules()">📖 规则</button>
+
 </body>
 </html>
