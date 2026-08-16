@@ -843,7 +843,7 @@
             let finalScore = bossDict[bossType];
             let label = "领·" + bossType;
 
-            if (!document.getElementById('noLeak').checked && bossType.indexOf("击杀玻利瓦尔，症结之核") === -1) {
+            if (!document.getElementById('noLeak').checked) {
                 finalScore -= 100;
                 if (finalScore < 0) finalScore = 0;
             }
@@ -988,7 +988,7 @@
             const beta = document.getElementById('beta').checked;
             const beacon = document.getElementById('beacon').checked;
             const submit = parseInt(document.getElementById('submit').value)||0;
-            const penal = parseInt(document.getElementById('penal').value)||0;
+            const penal = Math.abs(parseInt(document.getElementById('penal').value)||0);
             if (money > 40) {
                 let deducted = (money - 40) * 500;
                 insertCounter(`商店取钱${money}个`, -deducted);
