@@ -485,7 +485,7 @@
             height: 100%;
             background: #fff;
             box-shadow: -4px 0 20px rgba(0,0,0,0.2);
-            transition: right .3 ease;
+            transition: right .3s ease;
             z-index: 1002;
             display: flex;
             flex-direction: column;
@@ -592,9 +592,9 @@
                         <option>五层-过度繁殖</option>
                         <option>六层-同域共存</option>
                         <option>六层-命运共享</option>
-                        <option>三层-无效收尸</option>
-                        <option>四层-无效收尸</option>
-                        <option>五层-无效收尸</option>
+                        <option>三层-无效验尸</option>
+                        <option>四层-无效验尸</option>
+                        <option>五层-无效验尸</option>
 </select>
                     <div class="checkbox-container">
                         <label class="checkbox mult-checkbox"><input type="checkbox" id="heiliudi" onchange="emergencyMult(this)"> 黑流地脉</label>
@@ -724,10 +724,10 @@
                 "三层-辟路行进": 30,
                 "三层-趁火打劫": 30,
                 "三层-焦土之家": 30,
-                "三层-无效收尸": 100,
+                "三层-无效验尸": 100,
                 "四层-未来见闻": 100,
                 "四层-其他紧急": 80,
-                "四层-无效收尸": 80,
+                "四层-无效验尸": 80,
                 "五层-物欲遮天": 100,
                 "五层-恶意讨薪": 100,
                 "五层-送别仪式": 100,
@@ -735,7 +735,7 @@
                 "五层-一步之遥": 80,
                 "五层-丛林法则": 80,
                 "五层-过度繁殖": 80,
-                "五层-无效收尸": 50,
+                "五层-无效验尸": 50,
                 "六层-同域共存": 200,
                 "六层-命运共享": 150
             };
@@ -747,27 +747,20 @@
             let multName = "";
             if (document.getElementById('heiliudi').checked) { mult = 2; mark = " 黑流地脉"; multName = "黑流地脉"; }
             if (document.getElementById('qingxie').checked) { mult = 1.5; mark = " 倾斜沙丘"; multName = "倾斜沙丘"; }
+            if (multName === "") multName = "无";
             let finalScore = Math.floor(basicScore * mult);
 
-            if (type.indexOf("无效收尸") > -1) {
-                insertCounter(`无效收尸 ${type}${mark}`, finalScore);
-                return;
-            }
-
-            let existingMults = getLayerMults(layer);
-            if (existingMults.size > 0 && !(existingMults.size === 1 && existingMults.has(multName))) {
-                alert("同一层内实托邦加成需一致");
+            if (type.indexOf("无效验尸") > -1) {
+                insertCounter(`无效验尸 ${type}${mark}`, finalScore);
                 return;
             }
 
             let oldScore = getEmergencyScore(layer);
-            let counterText = document.getElementById('counter').value;
             if (finalScore <= oldScore) {
-                counterText += `${type}${mark} 0分\n`;
-                document.getElementById('counter').value = counterText;
                 return;
             }
             removeEmergencyLine(layer);
+            let counterText = document.getElementById('counter').value;
             counterText += `${type}${mark} ${finalScore}分\n`;
             document.getElementById('counter').value = counterText;
             refreshScore(finalScore - oldScore);
@@ -1027,7 +1020,7 @@
             if (nomud && team === "文明开化分队") {
                 insertCounter("全程无实托邦", 200); isConfirmed++;
             }
-            if (allhunt && hasLayerHunt("二层") && hasLayerHunt("三层") && hasLayerHunt("四层") && hasBoss("痛苦将息") && hasBoss("追猎畸症")) {
+            if (allhunt) {
                 insertCounter("全程追猎", 500); isConfirmed++;
             }
             insertCounter(`结算分${submit}分`, Math.floor(submit * 0.3));
@@ -1096,12 +1089,12 @@
             content += end + '\n';
             var blob = new Blob([content], {type:'text/plain;charset=utf-8'});
             var a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
+            a.href = 网站.createObjectURL(blob);
             a.download = '海选成绩_'+player+'_'+now.getFullYear()+p2(now.getMonth()+1)+p2(now.getDate())+'.txt';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            URL.revokeObjectURL(a.href);
+            网站.revokeObjectURL(a.href);
         }
 </script>
 
