@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>京云杯#5海选成绩分析</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; }
+        header {
+            background: linear-gradient(135deg, #2e7d32, #4CAF50);
+            color: #fff;
+            border-radius: 12px;
+            padding: 28px 24px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        header h1 { margin: 0; font-size: 24px; }
+        header p { margin: 4px 0 0; opacity: .9; font-size: 13px; }
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .drop {
+            border: 2px dashed #bdbdbd;
+            border-radius: 10px;
+            padding: 32px 20px;
+            text-align: center;
+            color: #777;
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .drop:hover, .drop.drag { border-color: #4CAF50; background: #f1f8f1; color: #2e7d32; }
+        .drop b { font-size: 18px; display: block; margin-bottom: 6px; }
+        input[type=file] { display: none; }
+        .stat-row {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .stat {
+            flex: 1 1 150px;
+            background: #f7f9f8;
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat .num { font-size: 26px; font-weight: 700; color: #2e7d32; }
+        .stat .lbl { font-size: 13px; color: #666; margin-top: 4px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #eee; white-space: nowrap; }
+        th { background: #f5f7f6; color: #555; cursor: pointer; user-select: none; }
+        th:hover { background: #e8efe9; }
+        tr:hover td { background: #f9fbfa; }
+        .rank { font-weight: 700; color: #2e7d32; }
+        .num-right { text-align: right; }
+        .total { font-weight: 700; color: #2e7d32; }
+        .chart-row { display: flex; gap: 16px; flex-wrap: wrap; }
+        .chart-box { flex: 1 1 320px; }
+        .chart-box canvas { max-height: 280px; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 12px; }
+        .badge-yes { background: #e8f5e9; color: #2e7d32; }
+        .badge-no { background: #fdecea; color: #c62828; }
+        .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
+        .toolbar button {
+            background: #4CAF50; color: #fff; border: none; border-radius: 6px;
+            padding: 8px 16px; cursor: pointer; font-size: 13px;
+        }
+        .toolbar button:hover { background: #45a049; }
+        .toolbar select {
+            padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px;
+        }
+        .empty { text-align: center; color: #999; padding: 20px; }
+        .filelist { margin-top: 12px; font-size: 13px; color: #2e7d32; }
+    
+.vtab{padding:5px 14px;margin:0 4px 4px 0;border:1px solid #ccc;border-radius:16px;background:#fff;color:#555;font-size:13px;cursor:pointer;}
+.vtab.on{background:#2196F3;border-color:#2196F3;color:#fff;font-weight:600;}
+.badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:12px;}
+.badge-no{background:#fdecea;color:#c0392b;}
+.badge-yes{background:#e8f5e9;color:#2e7d32;}
+</style>
+</head>
+<body>
+<div class="wrap">
+    <header>
+        <div>
+            <h1>京云杯#5 海选成绩分析</h1>
+            <p>批量导入「成绩导出」的 txt 文件，自动解析与统计</p>
+        </div>
+        <div>
+            <label class="drop" style="padding:10px 18px;border-style:solid;border-width:1px;">
+                <b style="font-size:14px;display:inline">选择/拖入 txt 文件</b>
+                <input type="file" id="fileInput" multiple accept=".txt">
+            </label>
+            <button id="cloudBtn" onclick="loadFromCloud()" style="padding:10px 18px;border:none;border-radius:6px;background:#2196F3;color:#fff;font-size:14px;cursor:pointer;vertical-align:top;">☁ 从云端读取</button>
+        </div>
+    </header>
+
+    <div class="card">
+        <div class="drop" id="dropZone">
+            <b>点击选择 或 拖拽 txt 文件到此处</b>
+            <span>可多选多个选手的成绩文件，自动合并分析</span>
+            <input type="file" id="fileInput2" multiple accept=".txt">
+        </div>
+        <div class="filelist" id="fileList"></div>
+    </div>
+
+    <div class="card" id="ctrlCard" style="display:none">
+        <div id="versionTabs" style="margin-bottom:10px;"></div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
+            <label style="font-size:13px;cursor:pointer;"><input type="checkbox" id="showUnpassed" style="vertical-align:middle;"> 显示未通过结局的数据</label>
+            <button onclick="restoreDeleted()" style="padding:5px 12px;border:none;border-radius:5px;background:#9e9e9e;color:#fff;font-size:13px;cursor:pointer;">恢复全部已删除</button>
+            <span style="font-size:12px;color:#999;" id="filterHint"></span>
+        </div>
+    </div>
+
+    <div class="card" id="statsCard" style="display:none">
+        <div class="stat-row" id="statsRow"></div>
+    </div>
+
+    <div class="card" id="tableCard" style="display:none">
+        <div class="toolbar">
+            <button onclick="downloadCsv()">导出 CSV</button>
+            <span style="font-size:13px;color:#666">点击表头可排序</span>
+        </div>
+        <div style="overflow-x:auto">
+            <table id="dataTable">
+                <thead><tr></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card" id="chartCard" style="display:none">
+        <h3 style="margin-top:0">统计图表</h3>
+        <div class="chart-row">
+            <div class="chart-box"><canvas id="chartScore"></canvas></div>
+            <div class="chart-box"><canvas id="chartTeam"></canvas></div>
+            <div class="chart-box"><canvas id="chartSpecial"></canvas></div>
+            <div class="chart-box"><canvas id="chartMech"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<script>
+var records = [];
+var charts = {};
+var currentVersion = 'all';   // 当前选中的版本 tab
+var showUnpassed = false;     // 是否显示未通过结局的数据
+
+// ---------- 云端读取 ----------
+function loadFromCloud() {
+    var btn = document.getElementById('cloudBtn');
+    if (btn) btn.disabled = true;
+    fetch('https://1307271636-lbtdsazrcu.ap-beijing.tencentscf.com/list')
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if (!data || !data.ok) throw new Error((data && data.error) || '无法获取列表');
+        var files = data.files || [];
+        if (!files.length) { alert('云端暂无成绩文件'); return; }
+        var promises = files.map(function(name){
+            var short = String(name).replace(/^成绩\//,'');
+            return fetch('https://1307271636-lbtdsazrcu.ap-beijing.tencentscf.com/file?name=' + encodeURIComponent(short))
+              .then(function(r){ return r.text(); })
+              .then(function(txt){ records.push(parseTxt(txt, short)); });
+        });
+        return Promise.all(promises);
+      })
+      .then(function(){ render(); })
+      .catch(function(err){ alert('云端读取失败：' + err); })
+      .finally(function(){ if (btn) btn.disabled = false; });
+}
+
+// ---------- 文件导入 ----------
+function bindDrop(dropZoneId) {
+    var el = document.getElementById(dropZoneId);
+    el.addEventListener('click', function() {
+        var inp = el.querySelector('input[type=file]');
+        if (inp) inp.click();
+    });
+    el.addEventListener('dragover', function(e){ e.preventDefault(); el.classList.add('drag'); });
+    el.addEventListener('dragleave', function(){ el.classList.remove('drag'); });
+    el.addEventListener('drop', function(e){
+        e.preventDefault(); el.classList.remove('drag');
+        if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+    });
+    var inp = el.querySelector('input[type=file]');
+    if (inp) inp.addEventListener('change', function(){ if (this.files.length) handleFiles(this.files); });
+}
+bindDrop('dropZone');
+
+function handleFiles(files) {
+    var list = Array.prototype.slice.call(files).filter(function(f){ return /\.txt$/i.test(f.name); });
+    var pending = list.length;
+    if (!pending) return;
+    list.forEach(function(file){
+        var reader = new FileReader();
+        reader.onload = function(e){
+            var d = parseTxt(e.target.result, file.name);
+            records.push(d);
+            pending--;
+            if (pending === 0) render();
+        };
+        reader.readAsText(file, 'utf-8');
+    });
+}
+
+// ---------- 解析 txt ----------
+function grab(text, key) {
+    var esc = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    var m = text.match(new RegExp(esc + '[^\n]*[:：]([^\n]*)'));
+    return m ? m[1].trim() : '';
+}
+function parseTxt(text, filename) {
+    var d = {};
+    d.file = filename;
+    d.player = grab(text, '选手姓名') || '选手7999';
+    d.team = grab(text, '开局分队');
+    d.mech = grab(text, '是否抓取机械师');
+    d.six = parseInt(grab(text, '六星数量') ) || 0;
+    d.money = parseInt(grab(text, '商店取钱')) || 0;
+    d.submit = parseInt(grab(text, '结算分')) || 0;
+    d.penal = parseInt(grab(text, '违规扣分')) || 0;
+    d.parts = parseInt(grab(text, '零件数量')) || 0;
+    d.alpha = /沙盘α\(√\)/.test(text);
+    d.beta = /沙盘β\(√\)/.test(text);
+    d.beacon = /怦然信标\(√\)/.test(text);
+    d.nonhome = /非本家5-6星数量0\(√\)/.test(text);
+    d.nomud = /全程无实托邦\(√\)/.test(text);
+    d.allhunt = /全程追猎\(√\)/.test(text);
+    d.heiliudi = /黑流地脉\(√\)/.test(text);
+    d.qingxie = /倾斜沙丘系\(√\)/.test(text);
+    var m = text.match(/当前得分[:：]\s*(-?\d+)/);
+    d.total = m ? parseInt(m[1]) : 0;
+    d.detail = '';
+    var c = text.split('【计分明细】')[1];
+    if (c) { c = c.split('--------------------------------')[0]; d.detail = c.trim(); }
+    // 版本号 + 是否通过结局（添加了领袖作战即视为通过）
+    d.version = grab(text, '版本') || '0.799';
+    d.pass = /领·/.test(text);
+    d.hidden = false;
+    return d;
+}
+
+// ---------- 过滤 / 版本 ----------
+function getFiltered() {
+    return records.filter(function(r){
+        if (r.hidden) return false;
+        if (currentVersion !== 'all' && r.version !== currentVersion) return false;
+        if (!showUnpassed && !r.pass) return false;
+        return true;
+    });
+}
+function buildVersionTabs() {
+    var vs = {};
+    records.forEach(function(r){ vs[r.version || '未知'] = 1; });
+    var versions = Object.keys(vs).sort();
+    var html = '<b style="font-size:13px;">版本：</b>';
+    html += '<button class="vtab' + (currentVersion === 'all' ? ' on' : '') + '" onclick="setVersion(\'all\')">全部</button>';
+    versions.forEach(function(v){
+        var n = records.filter(function(r){ return (r.version || '未知') === v && !r.hidden; }).length;
+        html += '<button class="vtab' + (currentVersion === v ? ' on' : '') + '" onclick="setVersion(\'' + v + '\')">' + esc(v) + ' (' + n + ')</button>';
+    });
+    document.getElementById('versionTabs').innerHTML = html;
+}
+function setVersion(v){ currentVersion = v; render(); }
+function deleteRecord(i){
+    if (i < 0 || i >= records.length) return;
+    if (!confirm('删除该条成绩数据？')) return;
+    records[i].hidden = true;
+    render();
+}
+function restoreDeleted(){
+    records.forEach(function(r){ r.hidden = false; });
+    render();
+}
+
+// ---------- 渲染 ----------
+function render() {
+    document.getElementById('ctrlCard').style.display = 'block';
+    buildVersionTabs();
+    var list = getFiltered();
+    if (!list.length) {
+        document.getElementById('statsCard').style.display = 'none';
+        document.getElementById('tableCard').style.display = 'none';
+        document.getElementById('chartCard').style.display = 'none';
+        document.getElementById('fileList').innerHTML = '共 ' + records.length + ' 条记录，当前版本/过滤后无数据（可勾选「显示未通过结局的数据」或点「恢复全部已删除」）';
+        document.getElementById('filterHint').textContent = '';
+        return;
+    }
+    var sorted = list.slice().sort(function(a,b){ return b.total - a.total; });
+    var total = list.reduce(function(s,r){ return s + r.total; }, 0);
+    var avg = Math.round(total / list.length);
+    var max = Math.max.apply(null, list.map(function(r){ return r.total; }));
+    var mechN = list.filter(function(r){ return r.mech === '是'; }).length;
+    var partsTotal = list.reduce(function(s,r){ return s + r.parts; }, 0);
+    var partsAvg = Math.round(partsTotal / list.length);
+    document.getElementById('statsCard').style.display = 'block';
+    document.getElementById('statsRow').innerHTML =
+        statBox(list.length, '选手数') + statBox(avg, '平均总分') + statBox(max, '最高分') +
+        statBox(mechN + ' / ' + list.length, '抓机械师人数') + statBox(partsTotal, '零件总数') + statBox(partsAvg, '平均零件');
+    document.getElementById('tableCard').style.display = 'block';
+    renderTable(sorted);
+    document.getElementById('chartCard').style.display = 'block';
+    drawCharts(sorted);
+    var passed = list.filter(function(r){ return r.pass; }).length;
+    document.getElementById('filterHint').textContent = '未通过结局的数据已隐藏 ' + (list.length - passed) + ' 条';
+    document.getElementById('fileList').innerHTML = '共 ' + records.length + ' 条，当前显示 ' + list.length + ' 条：' +
+        list.map(function(r){ return r.player; }).join('、');
+}
+function statBox(num, lbl) {
+    return '<div class="stat"><div class="num">' + num + '</div><div class="lbl">' + lbl + '</div></div>';
+}
+function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+var sortKey = 'total', sortAsc = false;
+function sortBy(k) {
+    if (sortKey === k) sortAsc = !sortAsc; else { sortKey = k; sortAsc = k === 'total' ? false : true; }
+    var list = getFiltered();
+    var sorted = list.slice().sort(function(a,b){
+        var va = a[k], vb = b[k];
+        if (typeof va === 'number' && typeof vb === 'number') return sortAsc ? va - vb : vb - va;
+        return sortAsc ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+    });
+    renderTable(sorted);
+}
+function renderTable(sorted) {
+    var thead = document.getElementById('dataTable').querySelector('thead tr');
+    var tbody = document.getElementById('dataTable').querySelector('tbody');
+    thead.innerHTML = '<th data-k="player">排名/选手</th><th data-k="team">分队</th><th data-k="total">总分</th>'
+        + '<th data-k="mech">机械师</th><th data-k="six">六星</th><th data-k="submit">结算分</th>'
+        + '<th data-k="penal">违规</th><th data-k="parts">零件</th><th>特殊加分</th><th data-k="version">版本</th><th>操作</th>';
+    tbody.innerHTML = sorted.map(function(r, i){
+        var sp = [];
+        if (r.alpha) sp.push('沙盘α'); if (r.beta) sp.push('沙盘β'); if (r.beacon) sp.push('信标');
+        if (r.nonhome) sp.push('非本家'); if (r.nomud) sp.push('无实托邦'); if (r.allhunt) sp.push('全程追猎');
+        var spTxt = sp.length ? sp.join('、') : '—';
+        var mBadge = r.mech === '是' ? '<span class="badge badge-yes">是</span>' : '<span class="badge badge-no">否</span>';
+        var passBadge = r.pass ? '' : ' <span class="badge badge-no">未通过</span>';
+        var idx = records.indexOf(r);
+        return '<tr><td><span class="rank">' + (i+1) + '</span> ' + esc(r.player) + passBadge + '</td><td>' + esc(r.team) + '</td>'
+            + '<td class="total num-right">' + r.total + '</td><td>' + mBadge + '</td><td class="num-right">' + r.six + '</td>'
+            + '<td class="num-right">' + r.submit + '</td><td class="num-right">' + r.penal + '</td><td class="num-right">' + r.parts + '</td><td>' + spTxt + '</td>'
+            + '<td>' + esc(r.version || '') + '</td>'
+            + '<td><button onclick="deleteRecord(' + idx + ')" style="padding:2px 8px;border:none;border-radius:4px;background:#e74c3c;color:#fff;font-size:12px;cursor:pointer;">删除</button></td></tr>';
+    }).join('');
+    thead.querySelectorAll('th').forEach(function(th){
+        th.onclick = function(){ sortBy(th.dataset.k); };
+    });
+}
+
+function drawCharts(sorted) {
+    destroyCharts();
+    charts.score = new Chart(document.getElementById('chartScore'), {
+        type: 'bar',
+        data: { labels: sorted.map(function(r){ return r.player; }), datasets: [{ label: '总分', data: sorted.map(function(r){ return r.total; }), backgroundColor: '#4CAF50' }] },
+        options: { indexAxis: 'y', plugins: { title: { display: true, text: '总分排名' } } }
+    });
+    var teamCount = {};
+    sorted.forEach(function(r){ teamCount[r.team] = (teamCount[r.team]||0) + 1; });
+    charts.team = new Chart(document.getElementById('chartTeam'), {
+        type: 'bar',
+        data: { labels: Object.keys(teamCount), datasets: [{ label: '人数', data: Object.values(teamCount), backgroundColor: '#66bb6a' }] },
+        options: { plugins: { title: { display: true, text: '各分队人数' } } }
+    });
+    var spLabels = ['沙盘α','沙盘β','怦然信标','非本家','无实托邦','全程追猎'];
+    var spData = spLabels.map(function(k){
+        var key = k==='沙盘α'?'alpha':k==='沙盘β'?'beta':k==='怦然信标'?'beacon':k==='非本家'?'nonhome':k==='无实托邦'?'nomud':'allhunt';
+        return sorted.filter(function(r){ return r[key]; }).length;
+    });
+    charts.special = new Chart(document.getElementById('chartSpecial'), {
+        type: 'bar',
+        data: { labels: spLabels, datasets: [{ label: '勾选人数', data: spData, backgroundColor: '#a5d6a7' }] },
+        options: { plugins: { title: { display: true, text: '特殊加分勾选统计' } } }
+    });
+    var mechYes = sorted.filter(function(r){ return r.mech === '是'; }).length;
+    var mechNo = sorted.length - mechYes;
+    charts.mech = new Chart(document.getElementById('chartMech'), {
+        type: 'doughnut',
+        data: { labels: ['抓机械师','不抓机械师'], datasets: [{ data: [mechYes, mechNo], backgroundColor: ['#4CAF50','#ef9a9a'] }] },
+        options: { plugins: { title: { display: true, text: '是否抓取机械师' } } }
+    });
+}
+function destroyCharts() {
+    Object.keys(charts).forEach(function(k){ if (charts[k]) charts[k].destroy(); });
+    charts = {};
+}
+
+// ---------- 导出 CSV ----------
+function downloadCsv() {
+    var list = getFiltered().slice().sort(function(a,b){ return b.total - a.total; });
+    var rows = [['排名','选手','分队','总分','是否抓机械师','六星数量','结算分','违规扣分','零件数量','版本','沙盘α','沙盘β','怦然信标','非本家','无实托邦','全程追猎']];
+    list.forEach(function(r, i){
+        rows.push([i+1, r.player, r.team, r.total, r.mech, r.six, r.submit, r.penal, r.parts, r.version,
+            r.alpha?'1':'0', r.beta?'1':'0', r.beacon?'1':'0', r.nonhome?'1':'0', r.nomud?'1':'0', r.allhunt?'1':'0']);
+    });
+    var csv = rows.map(function(r){ return r.map(function(c){ return '"' + String(c).replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
+    var blob = new Blob(['\ufeff' + csv], {type:'text/csv;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '海选成绩统计.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+}
+
+// 显示未通过结局开关
+document.getElementById('showUnpassed').addEventListener('change', function(){
+    showUnpassed = this.checked; render();
+});
+</script></script>
+</body>
+</html>
