@@ -539,10 +539,26 @@
 </style>
 </head>
 <body>
+    <div class="notice-bar" style="background:#fffbe6;border:1px solid #ffe58f;border-radius:8px;padding:10px 14px;margin:0 0 10px 0;font-size:13px;color:#8c6d1f;line-height:1.6;">
+        <b>📢 更新公告</b><br>
+        感谢各位测试选手对京云杯#5海选内部测试的支持<br>
+        计算器现已支持云端上传分数计算结果，分数计算结果仅用于内部对于规则的测试，不对外公布<br>
+        请不要上传恶意计算数据，请记得填写选手id<br>
+        修复了若干bug
+    </div>
+
+    <div id="noticeOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:10px;padding:22px;max-width:90%;width:360px;box-shadow:0 4px 20px rgba(0,0,0,.25);">
+            <h4 style="margin:0 0 10px;color:#8c6d1f;">📢 更新公告</h4>
+            <div style="font-size:14px;line-height:1.7;color:#333;">感谢各位测试选手对京云杯#5海选内部测试的支持<br>计算器现已支持云端上传分数计算结果，分数计算结果仅用于内部对于规则的测试，不对外公布<br>请不要上传恶意计算数据，请记得填写选手id<br>修复了若干bug</div>
+            <button onclick="closeNotice()" style="margin-top:14px;width:100%;padding:10px;border:none;border-radius:6px;background:#2196F3;color:#fff;font-size:14px;cursor:pointer;">我知道了</button>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Left Side -->
         <div class="frame">
-            <h3>状态设置</h3>
+            <h3>状态设置 <span style="font-size:12px;color:#999;">v0.799</span></h3>
             <div class="label">选手姓名</div>
             <input id="player" class="input" type="text" placeholder="输入选手姓名">
 
@@ -703,11 +719,24 @@
             <div class="horizontal">
                 <button class="button" onclick="clearAll()">归零!</button>
                 <button class="button" onclick="exportResult()">导出成绩</button>
+                <button class="button" id="uploadBtn" onclick="uploadResult()">一键上传</button>
             </div>
         </div>
     </div>
 
     <script>
+        const VERSION = '0.799';
+        (function(){
+            try {
+                if (!localStorage.getItem('notice_v0799')) {
+                    document.getElementById('noticeOverlay').style.display = 'flex';
+                }
+            } catch(e) {}
+        })();
+        function closeNotice(){
+            document.getElementById('noticeOverlay').style.display = 'none';
+            try { localStorage.setItem('notice_v0799','1'); } catch(e){}
+        }
         let isConfirmed = 1;
 
 
@@ -1048,7 +1077,7 @@
             document.getElementById('rulesPanel').classList.remove('open');
             document.getElementById('rulesOverlay').style.display = 'none';
         }
-        function exportResult() {
+        function buildContent() {
             var player = (document.getElementById('player').value || '').trim() || '选手7999';
             var team = document.getElementById('team').value;
             var counter = document.getElementById('counter').value;
@@ -1065,6 +1094,7 @@
             var time = now.getFullYear()+'-'+p2(now.getMonth()+1)+'-'+p2(now.getDate())+' '+p2(now.getHours())+':'+p2(now.getMinutes());
             var content = '京云杯#5海选计算器 成绩导出\n';
             content += '导出时间：'+time+'\n';
+            content += '版本：'+VERSION+'\n';
             content += '--------------------------------\n';
             content += '【选手信息】\n';
             content += '选手姓名：'+player+'\n';
@@ -1087,6 +1117,14 @@
             if (counter && !counter.endsWith('\n')) content += '\n';
             content += '--------------------------------\n';
             content += end + '\n';
+            return content;
+        }
+
+        function exportResult() {
+            var player = (document.getElementById('player').value || '').trim() || '选手7999';
+            var now = new Date();
+            function p2(n){ return (n<10?'0':'')+n; }
+            var content = buildContent();
             var safePlayer = String(player || '选手7999').replace(/[\\/:*?"<>|\s]+/g, '_');
             var blob = new Blob([content], {type:'text/plain;charset=utf-8'});
             var a = document.createElement('a');
@@ -1098,6 +1136,32 @@
                 document.body.removeChild(a);
                 URL.revokeObjectURL(a.href);
             }, 200);
+        }
+
+        function uploadResult() {
+            var player = (document.getElementById('player').value || '').trim() || '选手7999';
+            var content = buildContent();
+            if (!confirm('是否上传计算结果？\n\n分数计算结果仅用于内部对于规则的测试，不对外公布\n请记得填写选手id')) { return; }
+            var btn = document.getElementById('uploadBtn');
+            if (btn) { btn.disabled = true; btn.textContent = '上传中…'; }
+            fetch('https://1307271636-lbtdsazrcu.ap-beijing.tencentscf.com/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({player: player, content: content, version: VERSION})
+            }).then(function(r){ return r.json(); })
+              .then(function(data){
+                if (data && data.ok) {
+                    alert('上传成功！\n已保存为：' + data.name);
+                } else {
+                    alert('上传失败：' + (data.error || '未知错误'));
+                }
+              })
+              .catch(function(err){
+                alert('上传失败：网络错误 ' + err);
+              })
+              .finally(function(){
+                if (btn) { btn.disabled = false; btn.textContent = '一键上传'; }
+              });
         }
 </script>
 
