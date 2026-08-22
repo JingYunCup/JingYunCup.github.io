@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>京云杯#5海选计算器-beta</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            align-items: center;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            padding: 20px;
+            gap: 20px;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        @media (min-width: 1910px) {
+            .container {
+                width: 100%;
+            }
+        }
+        .frame {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px; /* 添加内边距 */
+            flex: 1 1 calc(50% - 10px);
+            width: auto;
+            min-width: 320px;
+            margin-bottom: 20px;
+            box-sizing: border-box; /* 确保内边距包含在宽度计算内 */
+        }
+
+        h3 {
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .label {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        .select, .input, .checkbox, .button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            min-width: 120px;
+            box-sizing: border-box; /* 包含内边距和边框 */
+        }
+        .checkbox {
+            display: inline-block;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        .checkbox:hover {
+            background-color: #f0f0f0;
+        }
+        .mult-checkbox {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 10px;
+            border: 2px solid #d6d6d6;
+            border-radius: 5px;
+            background-color: #fafafa;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all .15s ease;
+            user-select: none;
+            text-align: center;
+            line-height: 1.3;
+        }
+        .mult-checkbox:hover {
+            border-color: #4CAF50;
+            background-color: #f0f9f0;
+        }
+        .mult-checkbox input {
+            margin-right: 5px;
+            accent-color: #4CAF50;
+            flex-shrink: 0;
+        }
+        .mult-checkbox:has(input:checked) {
+            background-color: #4CAF50;
+            border-color: #4CAF50;
+            color: #ffffff;
+        }
+        .checkbox-container .mult-checkbox {
+            flex: 1 1 100% !important;
+            max-width: 100% !important;
+            min-width: 100% !important;
+            white-space: normal;
+        }
+        .pair-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .pair-row .input-container {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .pair-row .mech-chk {
+            flex: 0 0 auto;
+            margin: 0;
+            min-width: 0;
+            padding: 12px 16px;
+        }
+        .tri-chk .checkbox {
+            flex: 1 1 calc(33.333% - 10px) !important;
+            max-width: calc(33.333% - 10px) !important;
+            min-width: calc(33.333% - 10px) !important;
+        }
+        .pair-row {
+            align-items: stretch;
+        }
+        .pair-row .input-container {
+            display: flex;
+            align-items: center;
+        }
+        .pair-row .input-container .label {
+            line-height: 36px;
+            height: 36px;
+        }
+        .pair-row .mech-chk {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 36px;
+            box-sizing: border-box;
+            white-space: nowrap;
+        }
+        .tri-chk .checkbox {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 44px;
+            box-sizing: border-box;
+            white-space: normal;
+            line-height: 1.3;
+            text-align: center;
+        }
+        .sp-area {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .sp-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .sp-label {
+            flex: 0 0 76px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            height: 36px;
+            box-sizing: border-box;
+            text-align: right;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .sp-field {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .sp-area .input {
+            margin-bottom: 0;
+        }
+        .sp-row > .input {
+            margin-bottom: 0;
+        }
+        .sp-field .input {
+            flex: 1;
+            min-width: 0;
+        }
+        .sp-chk-row {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+        }
+        .sp-chk-row .chk {
+            flex: 1;
+            min-width: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 11px 8px;
+            border: 2px solid #d6d6d6;
+            border-radius: 5px;
+            background-color: #fafafa;
+            cursor: pointer;
+            font-size: 14px;
+            text-align: center;
+            line-height: 1.3;
+            white-space: normal;
+            user-select: none;
+            box-sizing: border-box;
+        }
+        .sp-chk-row .chk:hover {
+            border-color: #4CAF50;
+            background-color: #f0f9f0;
+        }
+        .sp-chk-row .chk input {
+            margin-right: 5px;
+            accent-color: #4CAF50;
+            flex-shrink: 0;
+        }
+        .sp-chk-row .chk:has(input:checked) {
+            background-color: #4CAF50;
+            border-color: #4CAF50;
+            color: #ffffff;
+        }
+        @media (max-width: 900px) {
+            .sp-row {
+                flex-wrap: wrap;
+            }
+            .sp-label {
+                flex: 0 0 100%;
+                text-align: left;
+                justify-content: flex-start;
+            }
+            .sp-field, .sp-chk-row {
+                flex: 1 1 100%;
+            }
+            .sp-chk-row {
+                flex-wrap: wrap;
+            }
+            .sp-chk-row .chk {
+                flex: 1 1 calc(50% - 10px);
+            }
+        }
+        @media (max-width: 600px) {
+            .sp-chk-row .chk {
+                flex: 1 1 100%;
+            }
+        }
+
+        .grid-row {
+            display: grid;
+            grid-template-columns: 72px 1fr;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .g-label {
+            text-align: right;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .g-content {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            min-width: 0;
+        }
+        .g-content .input {
+            flex: 1;
+            min-width: 0;
+        }
+        .g-content .mech-chk {
+            flex: 0 0 auto;
+            margin: 0;
+            white-space: nowrap;
+            height: 36px;
+            box-sizing: border-box;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .tri-chk .checkbox {
+            white-space: nowrap;
+        }
+        .checkbox-container {
+            display: flex;
+            flex-wrap: wrap; /* 允许换行 */
+            gap: 10px; /* 多选框之间的间距 */
+            justify-content: space-around; /* 均匀分布，避免对齐问题 */
+        }
+
+        .checkbox-container .checkbox {
+            flex: 1 1 calc(25% - 10px); /* 确保每行最多容纳4个 */
+            max-width: calc(25% - 10px); /* 限制最大宽度 */
+            min-width: calc(25% - 10px); /* 保证最小宽度 */
+            box-sizing: border-box; /* 包含内边距和边框 */
+            text-align: center;
+        }
+        .checkbox-container .checkbox:only-child {
+            flex: 1 1 100%; /* 独占整行时占满整行 */
+            max-width: 100%; /* 确保宽度适应整行 */
+            min-width: 100%;
+        }
+        .input-container {
+            display: flex;
+            align-items: baseline; /* 垂直居中对齐 */
+            gap: 10px; /* 添加间距 */
+            margin-bottom: 15px;
+        }
+
+        .input-container .label {
+            flex: 0 0 30%; /* 固定宽度 */
+            height: 36px;
+            text-align: right; /* 右对齐 */
+            white-space: nowrap; /* 防止换行 */
+            line-height: 36px; /* 设置与输入框一致的行高 */
+        }
+
+        .input-container .input {
+            flex: 1 1 70%; /* 占用剩余宽度 */
+            height: 36px; /* 确保输入框高度一致 */
+            padding: 5px; /* 添加内边距 */
+            box-sizing: border-box; /* 包含内边距和边框 */
+        }
+
+
+        .input-grid {
+            display: flex;
+            flex-wrap: wrap; /* 允许换行 */
+            gap: 10px; /* 控制输入框间距 */
+        }
+
+        .input-grid .input-container {
+            flex: 1 1 calc(50% - 10px); /* 宽屏时每行两个 */
+            max-width: calc(50% - 10px); /* 最大宽度 */
+            box-sizing: border-box; /* 包含内边距和边框 */
+        }
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .divider {
+            height: 5px;
+            background-color: #aaa;
+            margin: 10px 0;
+        }
+        .inputspecial{
+            width: 100%;
+            font-weight: bold;
+            font-size: 20px;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box; /* 包含内边距和边框 */
+        }
+        .fight-container {
+            display: flex;
+            flex-direction: row; /* 默认左右排列 */
+            justify-content: space-between;
+            align-items: stretch; /* 子元素高度一致 */
+            gap: 20px; /* 间距 */
+            position: relative;
+        }
+
+        .fight-container .frame {
+            flex: 1 1 45%; /* 每部分占45%的宽度 */
+            box-sizing: border-box;
+            border-radius: 0; /*紧密排列时不再显示边框*/
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0);
+        }
+
+        .divider-vertical {
+            width: 5px; /* 分隔线宽度 */
+            background-color: #aaa;
+            height: auto;
+            align-self: stretch;
+            margin: 0 10px;
+        }
+        /* 右侧按钮容器 */
+        .button-container {
+            display: flex;
+            gap: 10px; /* 按钮之间的间距 */
+            justify-content: flex-start; /* 左对齐按钮 */
+        }
+        /*此宽度以下藏品设置框不能一排显示四个*/
+        @media (max-width: 1440px) {
+            .checkbox-container .checkbox {
+                flex: 1 1 45%; /* 小屏幕每行最多2个 */
+                max-width: 45%; /* 限制宽度 */
+                min-width: 45%; /* 保证对齐 */
+            }
+        }
+        /*此宽度以下按钮、添加作战、输入框不能一排显示两个*/
+        @media (max-width: 1080px) {
+            .button-container {
+                flex-direction: column; /* 手机端垂直排列 */
+                align-items: stretch; /* 按钮占满整行 */
+            }
+            .fight-container {
+                flex-direction: column; /* 垂直排列 */
+            }
+            .fight-container .frame {
+                width: 100%;
+            }
+            .divider-vertical {
+                width: 100%; /* 改为横向分隔线 */
+                height: 5px;
+                margin: 10px 0;
+            }
+            .input-grid .input-container {
+                flex: 1 1 100%; /* 窄屏时每行一个 */
+                max-width: 100%; /* 最大宽度改为整行 */
+            }
+        }
+        /* 此宽度以下只能显示一列UI */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .frame {
+                width: 90%;
+            }
+        }
+        /* 此宽度以下藏品选择每行只能显示一个 */
+        @media (max-width: 480px) {
+            .checkbox-container .checkbox {
+                flex: 1 1 100%; /* 竖屏设备时每行一个 */
+                max-width: 100%;
+                min-width: 100%;
+            }
+        }
+        textarea{
+            resize: none;
+        }
+    
+        /* 规则侧边栏 */
+        .rules-toggle {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 1001;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 22px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+        .rules-toggle:hover { background-color: #45a049; }
+        .rules-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            display: none;
+            z-index: 1000;
+        }
+        .rules-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 380px;
+            height: 100%;
+            background: #fff;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.2);
+            transition: right .3s ease;
+            z-index: 1002;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+        .rules-panel.open { right: 0; }
+        .rules-head {
+            padding: 16px 20px;
+            background: #4CAF50;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .rules-close {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 26px;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .rules-body {
+            padding: 16px 20px;
+            overflow-y: auto;
+            flex: 1;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #333;
+        }
+        .rules-body h4 {
+            margin: 16px 0 6px;
+            color: #2e7d32;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 4px;
+            font-size: 15px;
+        }
+        .rules-body ul { margin: 6px 0; padding-left: 18px; }
+        .rules-body li { margin: 4px 0; }
+        .rule-formula {
+            background: #f1f8f1;
+            border-left: 4px solid #4CAF50;
+            padding: 10px 12px;
+            border-radius: 4px;
+        }
+        .rules-note { color: #888; font-size: 12px; }
+
+</style>
+</head>
+<body>
+    <div class="notice-bar" style="background:#fffbe6;border:1px solid #ffe58f;border-radius:8px;padding:10px 14px;margin:0 0 10px 0;font-size:13px;color:#8c6d1f;line-height:1.6;">
+        <b>📢 更新公告</b><br>
+        感谢各位选手对京云杯#5的支持<br>
+        京云杯#5海选赛现已开启<br>
+        目前计分规则主要针对海选赛选拔为主，后续将更新正赛团队赛规则<br>
+        选拔规则请参考海选招募群内的相关规则<br>
+        如果计算器出现分数计算bug请和海选招募群群主小茶XPC反馈
+    </div>
+
+    <div id="noticeOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:10px;padding:22px;max-width:90%;width:360px;box-shadow:0 4px 20px rgba(0,0,0,.25);">
+            <h4 style="margin:0 0 10px;color:#8c6d1f;">📢 更新公告</h4>
+            <div style="font-size:14px;line-height:1.7;color:#333;">感谢各位选手对京云杯#5的支持<br>京云杯#5海选赛现已开启<br>目前计分规则主要针对海选赛选拔为主，后续将更新正赛团队赛规则<br>选拔规则请参考海选招募群内的相关规则<br>如果计算器出现分数计算bug请和海选招募群群主小茶XPC反馈</div>
+            <button onclick="closeNotice()" style="margin-top:14px;width:100%;padding:10px;border:none;border-radius:6px;background:#2196F3;color:#fff;font-size:14px;cursor:pointer;">我知道了</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Left Side -->
+        <div class="frame">
+            <h3>状态设置 <span style="font-size:12px;color:#999;">v1.112</span></h3>
+            <div class="label">选手姓名</div>
+            <input id="player" class="input" type="text" placeholder="输入选手姓名">
+
+            <div class="label">开局分队</div>
+            <select id="team" class="select">
+                <option>本源研修分队</option>
+                <option>文明开化分队</option>
+                <option>开拓者分队</option>
+                <option>多边贸易分队</option>
+                <option>地质调查分队</option>
+                <option>指挥分队</option>
+                <option>特勤分队</option>
+                <option>后勤分队</option>
+                <option>矛头分队</option>
+                <option>突击战术分队</option>
+                <option>堡垒战术分队</option>
+                <option>远程战术分队</option>
+                <option>破坏战术分队</option>
+                <option>高台突破分队</option>
+                <option>地面突破分队</option>
+            </select>
+
+
+
+            <div class="divider"></div>
+
+            <div class="fight-container">
+                <!-- 紧急作战 -->
+                <div class="frame">
+                    <h3>紧急作战</h3>
+                    <div class="label">紧急作战</div>
+                    <select id="emergency" class="select">
+                        <option>三层-预算否决</option>
+                        <option>三层-生存习性</option>
+                        <option>三层-黑色逆流</option>
+                        <option>三层-辟路行进</option>
+                        <option>三层-趁火打劫</option>
+                        <option>三层-焦土之家</option>
+                        <option>四层-未来见闻</option>
+                        <option>四层-其他紧急</option>
+                        <option>五层-物欲遮天</option>
+                        <option>五层-恶意讨薪</option>
+                        <option>五层-送别仪式</option>
+                        <option>五层-彼处水如酒</option>
+                        <option>五层-一步之遥</option>
+                        <option>五层-丛林法则</option>
+                        <option>五层-过度繁殖</option>
+                        <option>六层-同域共存</option>
+                        <option>六层-命运共享</option>
+                    </select>
+                    <button class="button" onclick="addEmergency()">添加紧急作战</button>
+                    <div class="divider"></div>
+                    <h3>特殊事件作战</h3>
+                    <div class="label">特殊事件作战</div>
+                    <select id="special" class="select">
+                        <option>紧急湖中魇</option>
+                        <option>紧急合伙人会议</option>
+                        <option>无效验尸（前四层）</option>
+                    </select>
+                    <button class="button" onclick="addSpecial()">添加特殊事件</button>
+                </div>
+
+                <!-- 分隔线 -->
+                <div class="divider-vertical"></div>
+
+                <!-- 领袖作战 -->
+                <div class="frame">
+                    <h3>领袖作战</h3>
+                    <div class="label">领袖作战</div>
+                    <select id="boss" class="select">
+                        <option>痛苦将息</option>
+                        <option>混沌源阶理论</option>
+                        <option>畸症（击杀玻利瓦尔，症结之核）通关</option>
+                        <option>畸症（没有击杀玻利瓦尔，症结之核）通关</option>
+                    </select>
+                    <div class="checkbox-container">
+                        <label class="checkbox"><input type="checkbox" id="noLeak"> 无漏通关</label>
+                    </div>
+                    <button class="button" onclick="addBoss()">添加领袖作战</button>
+                    <div class="divider"></div>
+                    <h3>追猎关卡</h3>
+                    <div class="label">追猎关卡</div>
+                    <select id="hunt" class="select">
+                        <option>外显尖牙</option>
+                        <option>哀悼铁腕</option>
+                        <option>赤金厄运</option>
+                        <option>闹乐</option>
+                        <option>灭身</option>
+                        <option>纵怒</option>
+                    </select>
+                    <button class="button" onclick="addHunt()">添加追猎关卡</button>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+            <h3>特殊加分</h3>
+            <div class="sp-area">
+                <div class="sp-row">
+                    <span class="sp-label">商店取钱</span>
+                    <input id="money" class="input" type="number" placeholder="输入金额">
+                </div>
+                <div class="sp-row">
+                    <span class="sp-label">六星数量</span>
+                    <div class="sp-field">
+                        <input id="sixN" class="input" type="number" placeholder="含临时">
+                        <label class="chk"><input type="checkbox" id="mech"> 抓取机械师</label>
+                    </div>
+                </div>
+                <div class="sp-row">
+                    <span class="sp-label"></span>
+                    <div class="sp-chk-row">
+                        <label class="chk"><input type="checkbox" id="alpha"> 沙盘α</label>
+                        <label class="chk"><input type="checkbox" id="beta"> 沙盘β</label>
+                        <label class="chk"><input type="checkbox" id="beacon"> 怦然信标</label>
+                    </div>
+                </div>
+                <div class="sp-row">
+                    <span class="sp-label"></span>
+                    <div class="sp-chk-row">
+                        <label class="chk"><input type="checkbox" id="god"> 击坠神明</label>
+                        <label class="chk"><input type="checkbox" id="light"> 湮没光明</label>
+                        <label class="chk"><input type="checkbox" id="civil"> 焚毁文明</label>
+                    </div>
+                </div>
+                <div class="sp-row">
+                    <span class="sp-label"></span>
+                    <div class="sp-chk-row">
+                        <label class="chk"><input type="checkbox" id="nomud"> 全程无实托邦</label>
+                        <label class="chk"><input type="checkbox" id="allhunt"> 全程追猎</label>
+                    </div>
+                </div>
+                <div class="sp-row">
+                    <span class="sp-label"></span>
+                    <div class="sp-chk-row">
+                        <button class="button" onclick="addGuofu()" style="padding:3px 10px;font-size:12px;">果腹补偿 +20</button>
+                    </div>
+                </div>
+                <div class="sp-row">
+                    <span class="sp-label">六层命运所指交出</span>
+                    <div class="sp-field">
+                        <input type="number" id="fate" value="0" min="0" style="width:60px;">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+
+        <!-- Right Side -->
+        <div class="frame">
+
+            <div class="label">违规扣分</div>
+            <input id="penal" class="input" type="number" placeholder="输入分数">
+
+            <div class="label">零件数量</div>
+            <input id="parts" class="input" type="number" placeholder="输入数量">
+
+            <h3>计分板</h3>
+            <textarea id="counter" class="input" rows="20" placeholder="" disabled></textarea>
+
+            <div class="horizontal">
+                <button class="button" onclick="deleteLastItem()">删除最后一项</button>
+            </div>
+
+            <div class="horizontal">
+                <div class="label">结算分</div>
+                <input id="submit" class="input" type="number" placeholder="输入分数">
+                <button class="button" onclick="confirmScore()">结算!</button>
+            </div>
+
+            <textarea id="end" class="inputspecial" rows="1" placeholder="当前得分:0" disabled></textarea>
+            <div class="horizontal">
+                <button class="button" onclick="clearAll()">归零!</button>
+                <button class="button" onclick="exportResult()">导出成绩</button>
+                <button class="button" id="uploadBtn" onclick="uploadResult()">一键上传</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const VERSION = '1.112';
+        (function(){
+            try {
+                if (!localStorage.getItem('notice_v1112b')) {
+                    document.getElementById('noticeOverlay').style.display = 'flex';
+                }
+            } catch(e) {}
+        })();
+        function closeNotice(){
+            document.getElementById('noticeOverlay').style.display = 'none';
+            try { localStorage.setItem('notice_v1112b','1'); } catch(e){}
+        }
+        let isConfirmed = 1;
+
+
+
+                function addEmergency() {
+            if(isConfirmed!==1){
+                alert("请勿在结算后添加作战");
+                return;
+            }
+            const emergencyDict = {
+                "三层-预算否决": 20,
+                "三层-生存习性": 20,
+                "三层-黑色逆流": 20,
+                "三层-辟路行进": 15,
+                "三层-趁火打劫": 15,
+                "三层-焦土之家": 15,
+                "四层-未来见闻": 50,
+                "四层-其他紧急": 40,
+                "五层-物欲遮天": 50,
+                "五层-恶意讨薪": 50,
+                "五层-送别仪式": 50,
+                "五层-彼处水如酒": 50,
+                "五层-一步之遥": 40,
+                "五层-丛林法则": 40,
+                "五层-过度繁殖": 40,
+                "六层-同域共存": 100,
+                "六层-命运共享": 75
+            };
+            const type = document.getElementById('emergency').value;
+            const layer = type.split("-")[0];
+            const finalScore = emergencyDict[type];
+            let oldScore = getEmergencyScore(layer);
+            if (finalScore <= oldScore) {
+                return;
+            }
+            removeEmergencyLine(layer);
+            let counterText = document.getElementById('counter').value;
+            counterText += `${type} ${finalScore}分\n`;
+            document.getElementById('counter').value = counterText;
+            refreshScore(finalScore - oldScore);
+        }
+
+        function addSpecial() {
+            if(isConfirmed!==1){
+                alert("请勿在结算后添加作战");
+                return;
+            }
+            const specialDict = {
+                "紧急湖中魇": 30,
+                "紧急合伙人会议": 50,
+                "无效验尸（前四层）": 50
+            };
+            const type = document.getElementById('special').value;
+            const finalScore = specialDict[type];
+            if (hasSpecial(type)) {
+                alert("该特殊事件已添加");
+                return;
+            }
+            let counterText = document.getElementById('counter').value;
+            counterText += `特·${type} ${finalScore}分\n`;
+            document.getElementById('counter').value = counterText;
+            refreshScore(finalScore);
+        }
+        function hasSpecial(name) {
+            let lines = document.getElementById('counter').value.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].indexOf("特·" + name) === 0) return true;
+            }
+            return false;
+        }
+
+        
+
+        function getEmergencyScore(layer) {
+            let lines = document.getElementById('counter').value.split('\n');
+            let max = 0;
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].startsWith(layer + "-")) {
+                    let parts = lines[i].split(' ');
+                    let last = parts[parts.length - 1];
+                    let sc = parseInt(last.substring(0, last.length - 1));
+                    if (sc > max) max = sc;
+                }
+            }
+            return max;
+        }
+
+        function removeEmergencyLine(layer) {
+            let lines = document.getElementById('counter').value.split('\n');
+            let removed = 0;
+            let target = -1;
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].startsWith(layer + "-")) {
+                    let parts = lines[i].split(' ');
+                    let last = parts[parts.length - 1];
+                    let sc = parseInt(last.substring(0, last.length - 1));
+                    if (sc > removed) { removed = sc; target = i; }
+                }
+            }
+            if (target >= 0) lines.splice(target, 1);
+            document.getElementById('counter').value = lines.join('\n');
+            return removed;
+        }
+
+        
+
+                        function addBoss() {
+            if(isConfirmed!==1){
+                alert("请勿在结算后添加作战");
+                return;
+            }
+            const bossDict = {
+                "痛苦将息": 300,
+                "混沌源阶理论": 300,
+                "畸症（击杀玻利瓦尔，症结之核）通关": 500,
+                "畸症（没有击杀玻利瓦尔，症结之核）通关": 200
+            };
+            const bossType = document.getElementById('boss').value;
+            const group = bossType.indexOf("畸症") > -1 ? "B" : "A";
+            if (leaderGroupHas(group)) {
+                alert("该组领袖只能添加一个");
+                return;
+            }
+            let finalScore = bossDict[bossType];
+            // 没有击杀（放走最终boss）= 注定非无漏，不加无漏分
+            const isNoKill = bossType.indexOf("没有击杀") > -1;
+            if (!isNoKill && document.getElementById('noLeak').checked) {
+                finalScore += 50;
+            }
+            insertCounter("领·" + bossType, finalScore);
+        }
+
+        function leaderGroupHas(group) {
+            let lines = document.getElementById('counter').value.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].indexOf("领·") === 0) {
+                    let isB = lines[i].indexOf("畸症") > -1;
+                    if ((group === "B" && isB) || (group === "A" && !isB)) return true;
+                }
+            }
+            return false;
+        }
+
+                function addHunt() {
+            if(isConfirmed!==1){
+                alert("请勿在结算后添加作战");
+                return;
+            }
+            const huntDict = {
+                "外显尖牙": 20,
+                "哀悼铁腕": 30,
+                "赤金厄运": 40,
+                "闹乐": 25,
+                "灭身": 30,
+                "纵怒": 40
+            };
+            const type = document.getElementById('hunt').value;
+            if (hasHunt(type)) {
+                alert("该追猎关卡已添加（同一关卡仅计1次）");
+                return;
+            }
+            let score = huntDict[type];
+            let counterText = document.getElementById('counter').value;
+            counterText += `猎·${type} ${score}分\n`;
+            document.getElementById('counter').value = counterText;
+            refreshScore(score);
+        }
+        function hasHunt(name) {
+            let lines = document.getElementById('counter').value.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].indexOf("猎·" + name) === 0) return true;
+            }
+            return false;
+        }
+
+        function getHuntLayerCount(layer) {
+            let lines = document.getElementById('counter').value.split('\n');
+            let cnt = 0;
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].indexOf("猎·" + layer + "-") === 0) cnt++;
+            }
+            return cnt;
+        }
+
+        function getHuntTotalCount() {
+            let lines = document.getElementById('counter').value.split('\n');
+            let cnt = 0;
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].indexOf("猎·") === 0) cnt++;
+            }
+            return cnt;
+        }
+
+        function hasLayerHunt(layer) {
+            return getHuntLayerCount(layer) > 0;
+        }
+
+        function hasBoss(name) {
+            let lines = document.getElementById('counter').value.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].indexOf("领·" + name) === 0) return true;
+            }
+            return false;
+        }
+
+        function insertCounter(label, score) {
+            let counterText = document.getElementById('counter').value;
+            let prefix = label.split(" ")[0];
+            let lines=counterText.split('\n');
+            let isprinted=true;
+            for(let i=0;i<lines.length;i++){
+                let prefixlist=lines[i].split(" ");
+                let end = prefixlist.length;
+                if (prefixlist[0] === prefix) {
+                    isprinted=false;
+                    if (parseInt(prefixlist[end - 1].substring(0, prefixlist[end - 1].length - 1)) < score) {
+                        refreshScore(-parseInt(prefixlist[end - 1].substring(0, prefixlist[end - 1].length - 1)));
+                        lines.splice(i, 1);
+                        isprinted = true;
+                        break;
+                    }
+                }
+            }
+            counterText=lines.join("\n");
+            if(isprinted){
+                counterText += `${label} ${score}分\n`;
+                refreshScore(score);
+            }
+            document.getElementById('counter').value = counterText;
+        }
+
+        function refreshScore(score) {
+            let currentScore = parseInt(document.getElementById('end').value.split(':')[1])||0;
+            currentScore += score;
+            document.getElementById('end').value = "当前得分:" + currentScore;
+        }
+
+        function deleteLastItem() {
+            for(let times=0;times<isConfirmed;times++) {
+                let counterText = document.getElementById('counter').value;
+                let lines = counterText.split('\n');
+                if (lines.length === 0) {
+                    return;
+                }
+                lines.pop();
+                let lastLine = lines.pop();
+                prefix = lastLine.split(" ");
+                let lastScore = parseInt(prefix[prefix.length - 1].substr(0, prefix[prefix.length - 1].length - 1));
+                document.getElementById('counter').value = lines.join('\n');
+                if (lines.length !== 0) document.getElementById('counter').value += "\n";
+                refreshScore(-lastScore);
+            }
+            isConfirmed=1;
+        }
+
+                function confirmScore() {
+            if(isConfirmed!==1){
+                alert("请勿重复结算");
+                return;
+            }
+            const team = document.getElementById('team').value;
+            const money = parseInt(document.getElementById('money').value)||0;
+            const sixN = parseInt(document.getElementById('sixN').value)||0;
+            const mech = document.getElementById('mech').checked;
+            const alpha = document.getElementById('alpha').checked;
+            const beta = document.getElementById('beta').checked;
+            const beacon = document.getElementById('beacon').checked;
+            const god = document.getElementById('god').checked;
+            const light = document.getElementById('light').checked;
+            const civil = document.getElementById('civil').checked;
+            const nomud = document.getElementById('nomud').checked;
+            const allhunt = document.getElementById('allhunt').checked;
+            const submit = parseInt(document.getElementById('submit').value)||0;
+            const parts = parseInt(document.getElementById('parts').value)||0;
+            const penal = Math.abs(parseInt(document.getElementById('penal').value)||0);
+            const fate = parseInt(document.getElementById('fate').value)||0;
+            if (money > 40) {
+                let deducted = (money - 40) * 500;
+                insertCounter(`商店取钱${money}个`, -deducted);
+                isConfirmed++;
+            }
+            if (!mech) {
+                insertCounter("不抓取机械师", 300);
+                isConfirmed++;
+                let sixScore = 0;
+                if (sixN <= 3) sixScore = 300;
+                else if (sixN <= 5) sixScore = 200;
+                else if (sixN <= 8) sixScore = 100;
+                if (sixScore !== 0) {
+                    insertCounter(`六星数量${sixN}个`, sixScore);
+                    isConfirmed++;
+                }
+            }
+            if (alpha) { insertCounter("沙盘α", 40); isConfirmed++; }
+            if (beta) { insertCounter("沙盘β", 50); isConfirmed++; }
+            if (alpha && beta) { insertCounter("双沙盘", 100); isConfirmed++; }
+            if (beacon) { insertCounter("怦然信标", 100); isConfirmed++; }
+            let weakN = (god?1:0) + (light?1:0) + (civil?1:0);
+            let weakScore = 200 - (3 - weakN) * 500;
+            insertCounter(`三削弱藏${weakN}/3`, weakScore);
+            isConfirmed++;
+            if (nomud && team === "文明开化分队") {
+                insertCounter("全程无实托邦", 100); isConfirmed++;
+            }
+            if (allhunt) {
+                insertCounter("全程追猎", 300); isConfirmed++;
+            }
+            let coeff = 1;
+            if (team === "多边贸易分队") coeff = 0.9;
+            else if (team === "后勤分队") coeff = 0.95;
+            let calc = Math.floor((submit - 7.5 * parts) * 0.5 * coeff);
+            insertCounter(`结算分${submit}分`, calc);
+            isConfirmed++;
+            if (fate > 0) {
+                insertCounter(`命运所指交出${fate}个`, -fate * 500);
+            }
+            if (penal > 0) {
+                insertCounter(`违规扣分${penal}分`, -penal);
+            }
+        }
+
+        function addGuofu() {
+            if(isConfirmed!==1){
+                alert("请勿在结算后添加");
+                return;
+            }
+            if (hasItem("果腹补偿")) {
+                alert("果腹补偿仅第一次触发加分");
+                return;
+            }
+            insertCounter("果腹补偿", 20);
+        }
+        function hasItem(prefix) {
+            let lines = document.getElementById('counter').value.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].indexOf(prefix) === 0) return true;
+            }
+            return false;
+        }
+        function clearAll() {
+            document.getElementById('counter').value = '';
+            document.getElementById('end').value = "当前得分:0";
+            isConfirmed = 1;
+        }
+    
+        function toggleRules() {
+            var p = document.getElementById('rulesPanel');
+            var o = document.getElementById('rulesOverlay');
+            if (p.classList.contains('open')) { closeRules(); }
+            else { p.classList.add('open'); o.style.display = 'block'; }
+        }
+        function closeRules() {
+            document.getElementById('rulesPanel').classList.remove('open');
+            document.getElementById('rulesOverlay').style.display = 'none';
+        }
+        function buildContent() {
+            var player = (document.getElementById('player').value || '').trim() || '选手7999';
+            var team = document.getElementById('team').value;
+            var counter = document.getElementById('counter').value;
+            var end = document.getElementById('end').value;
+            var mech = document.getElementById('mech').checked ? '是' : '否';
+            var sixN = document.getElementById('sixN').value || '0';
+            var money = document.getElementById('money').value || '0';
+            var submit = document.getElementById('submit').value || '0';
+            var penal = document.getElementById('penal').value || '0';
+            var parts = document.getElementById('parts').value || '0';
+            var fate = document.getElementById('fate').value || '0';
+            function chk(id){ return document.getElementById(id).checked ? '√' : '×'; }
+            var now = new Date();
+            function p2(n){ return (n<10?'0':'')+n; }
+            var time = now.getFullYear()+'-'+p2(now.getMonth()+1)+'-'+p2(now.getDate())+' '+p2(now.getHours())+':'+p2(now.getMinutes());
+            var content = '京云杯#5海选计算器 成绩导出\n';
+            content += '导出时间：'+time+'\n';
+            content += '版本：'+VERSION+'\n';
+            content += '--------------------------------\n';
+            content += '【选手信息】\n';
+            content += '选手姓名：'+player+'\n';
+            content += '开局分队：'+team+'\n';
+            content += '--------------------------------\n';
+            content += '【录入信息】\n';
+            content += '是否抓取机械师：'+mech+'\n';
+            content += '六星数量(含临时)：'+sixN+'\n';
+            content += '商店取钱(源石锭)：'+money+'\n';
+            content += '结算分：'+submit+'\n';
+            content += '违规扣分：'+penal+'\n';
+            content += '零件数量：'+parts+'\n';
+            content += '命运所指交出：'+fate+'\n';
+            content += '特殊加分勾选：\n';
+            content += '  沙盘α('+chk('alpha')+') 沙盘β('+chk('beta')+') 怦然信标('+chk('beacon')+')\n';
+            content += '  击坠神明('+chk('god')+') 湮没光明('+chk('light')+') 焚毁文明('+chk('civil')+')\n';
+            content += '  全程无实托邦('+chk('nomud')+') 全程追猎('+chk('allhunt')+')\n';
+            content += '--------------------------------\n';
+            content += '【计分明细】\n';
+            content += (counter || '（空）');
+            if (counter && !counter.endsWith('\n')) content += '\n';
+            content += '--------------------------------\n';
+            content += end + '\n';
+            return content;
+        }
+
+        function exportResult() {
+            var player = (document.getElementById('player').value || '').trim() || '选手7999';
+            var now = new Date();
+            function p2(n){ return (n<10?'0':'')+n; }
+            var content = buildContent();
+            var safePlayer = String(player || '选手7999').replace(/[\\/:*?"<>|\s]+/g, '_');
+            var blob = new Blob([content], {type:'text/plain;charset=utf-8'});
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = '海选成绩_' + safePlayer + '_' + now.getFullYear() + p2(now.getMonth()+1) + p2(now.getDate()) + '.txt';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function(){
+                document.body.removeChild(a);
+                URL.revokeObjectURL(a.href);
+            }, 200);
+        }
+
+        function uploadResult() {
+            var player = (document.getElementById('player').value || '').trim() || '选手7999';
+            var content = buildContent();
+            if (!confirm('是否上传计算结果？\n\n分数计算结果仅用于内部对于规则的测试，不对外公布\n请记得填写选手id')) { return; }
+            var btn = document.getElementById('uploadBtn');
+            if (btn) { btn.disabled = true; btn.textContent = '上传中…'; }
+            fetch('https://1307271636-lbtdsazrcu.ap-beijing.tencentscf.com/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({player: player, content: content, version: VERSION})
+            }).then(function(r){ return r.json(); })
+              .then(function(data){
+                if (data && data.ok) {
+                    alert('上传成功！\n已保存为：' + data.name);
+                } else {
+                    alert('上传失败：' + (data.error || '未知错误'));
+                }
+              })
+              .catch(function(err){
+                alert('上传失败：网络错误 ' + err);
+              })
+              .finally(function(){
+                if (btn) { btn.disabled = false; btn.textContent = '一键上传'; }
+              });
+        }
+</script>
+
+<!-- 规则侧边栏 -->
+<div id="rulesOverlay" class="rules-overlay" onclick="closeRules()"></div>
+<aside id="rulesPanel" class="rules-panel">
+    <div class="rules-head">
+        <span>海选分数参考</span>
+        <button class="rules-close" onclick="closeRules()">&times;</button>
+    </div>
+        <div class="rules-body">
+        <p class="rule-formula"><b>总分 =（游戏结算分 − 7.5×零件）× 分队系数 × 0.5 + 规则加分 + 关卡加分 + 特殊藏品加分</b><br><span class="rules-note">分队系数：多边贸易 0.9、后勤 0.95、其他 1</span></p>
+
+        <h4>规则加分 · 阵容</h4>
+        <ul>
+            <li>未抓机械师：六星数量(含临时) ≤3 <b>+300</b>、3~5 <b>+200</b>、5~8 <b>+100</b>（取最高档）</li>
+            <li>全程追猎：每层触发追猎且通过所有追猎关卡、不在失与得交换探测先锋 <b>+300</b><br><span class="rules-note">（小八界→安眠一隅不破坏；触发追忆该层也需追猎，且不重复计分）</span></li>
+            <li>文明开化分队 全程未触发实托邦（不含希望的沃土）<b>+100</b></li>
+        </ul>
+
+        <h4>关卡加分 · 非结局</h4>
+        <ul>
+            <li><b>追猎关卡</b>（需无漏，同一关卡仅计1次）<br>外显尖牙 <b>+20</b>、哀悼铁腕 <b>+30</b>、赤金厄运 <b>+40</b>、闹乐 <b>+25</b>、灭身 <b>+30</b>、纵怒 <b>+40</b></li>
+            <li><b>特殊事件作战</b>（不重复计分）<br>紧急湖中魇 <b>+30</b>、紧急合伙人会议 <b>+50</b>、无效验尸（前四层）<b>+50</b></li>
+            <li><b>紧急加分</b>（每层取最高，漏怪不加）<br>三层 预算否决/生存习性/黑色逆流 <b>+20</b>，辟路行进/趁火打劫/焦土之家 <b>+15</b><br>四层 未来见闻 <b>+50</b>，其他 <b>+40</b><br>五层 物欲遮天/恶意讨薪/送别仪式/彼处水如酒 <b>+50</b>，一步之遥/丛林法则/过度繁殖 <b>+40</b><br>六层 同域共存 <b>+100</b>，命运共享 <b>+75</b></li>
+        </ul>
+
+        <h4>关卡加分 · 结局</h4>
+        <ul>
+            <li>痛苦将息 <b>+300</b>（无漏额外 <b>+50</b>）</li>
+            <li>混沌源阶理论 <b>+300</b>（无漏额外 <b>+50</b>）</li>
+            <li>畸症 <b>+200</b>（击杀玻利瓦尔额外 <b>+300</b>；无漏额外 <b>+50</b>）</li>
+        </ul>
+
+        <h4>特殊藏品加分</h4>
+        <ul>
+            <li>沙盘α <b>+40</b>、沙盘β <b>+50</b>、双沙盘额外 <b>+100</b>、怦然信标 <b>+100</b></li>
+            <li>击坠神明/湮没光明/焚毁文明 <b>+200</b>，每缺一个 <b>−500</b>；每在第六层命运所指交出一个特定收藏品/源石锭 <b>−500</b></li>
+            <li>果腹：禁止主动获取并使用；单藏品不抓取补偿 <b>+20</b>（仅第一次）；强制获取不得使用效果，违规 <b>−200</b>；主动获取并使用总分计 <b>0</b> 分</li>
+        </ul>
+
+        <h4>注意事项</h4>
+        <ul>
+            <li>1. 商店提取源石锭需≤40，每超出1 <b>−500</b> 分</li>
+            <li>2. 禁用“襁褓生灵”；海选两次比赛前后均不可获得，且不能使用相同支援选项</li>
+            <li>3. 进入第二层且未移动前，可申请一次重开更换特勤分队烧水（快速获得开局奖励）</li>
+        </ul>
+    </div>
+
+</aside>
+<button class="rules-toggle" onclick="toggleRules()">📖 规则</button>
+
+</body>
+</html>
