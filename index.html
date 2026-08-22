@@ -545,13 +545,14 @@
         京云杯#5海选赛现已开启<br>
         目前计分规则主要针对海选赛选拔为主，后续将更新正赛团队赛规则<br>
         选拔规则请参考海选招募群内的相关规则<br>
-        如果计算器出现分数计算bug请和海选招募群群主小茶XPC反馈
+        如果计算器出现分数计算bug请和海选招募群群主小茶XPC反馈<br>
+        计算器拥有分数一键上传功能，希望各位选手能上传数据，供组委会进行分数统计
     </div>
 
     <div id="noticeOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
         <div style="background:#fff;border-radius:10px;padding:22px;max-width:90%;width:360px;box-shadow:0 4px 20px rgba(0,0,0,.25);">
             <h4 style="margin:0 0 10px;color:#8c6d1f;">📢 更新公告</h4>
-            <div style="font-size:14px;line-height:1.7;color:#333;">感谢各位选手对京云杯#5的支持<br>京云杯#5海选赛现已开启<br>目前计分规则主要针对海选赛选拔为主，后续将更新正赛团队赛规则<br>选拔规则请参考海选招募群内的相关规则<br>如果计算器出现分数计算bug请和海选招募群群主小茶XPC反馈</div>
+            <div style="font-size:14px;line-height:1.7;color:#333;">感谢各位选手对京云杯#5的支持<br>京云杯#5海选赛现已开启<br>目前计分规则主要针对海选赛选拔为主，后续将更新正赛团队赛规则<br>选拔规则请参考海选招募群内的相关规则<br>如果计算器出现分数计算bug请和海选招募群群主小茶XPC反馈<br>计算器拥有分数一键上传功能，希望各位选手能上传数据，供组委会进行分数统计</div>
             <button onclick="closeNotice()" style="margin-top:14px;width:100%;padding:10px;border:none;border-radius:6px;background:#2196F3;color:#fff;font-size:14px;cursor:pointer;">我知道了</button>
         </div>
     </div>
@@ -744,14 +745,14 @@
         const VERSION = '1.112';
         (function(){
             try {
-                if (!localStorage.getItem('notice_v1112b')) {
+                if (!localStorage.getItem('notice_v1112c')) {
                     document.getElementById('noticeOverlay').style.display = 'flex';
                 }
             } catch(e) {}
         })();
         function closeNotice(){
             document.getElementById('noticeOverlay').style.display = 'none';
-            try { localStorage.setItem('notice_v1112b','1'); } catch(e){}
+            try { localStorage.setItem('notice_v1112c','1'); } catch(e){}
         }
         let isConfirmed = 1;
 
