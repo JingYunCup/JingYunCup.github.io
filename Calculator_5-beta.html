@@ -541,16 +541,17 @@
 <body>
     <div class="notice-bar" style="background:#fffbe6;border:1px solid #ffe58f;border-radius:8px;padding:10px 14px;margin:0 0 10px 0;font-size:13px;color:#8c6d1f;line-height:1.6;">
         <b>📢 更新公告</b><br>
-        感谢各位测试选手对京云杯#5海选内部测试的支持<br>
-        计算器现已支持云端上传分数计算结果，分数计算结果仅用于内部对于规则的测试，不对外公布<br>
-        请不要上传恶意计算数据，请记得填写选手id<br>
-        修复了若干bug
+        感谢各位选手对京云杯#5的支持<br>
+        京云杯#5海选赛现已开启<br>
+        目前计分规则主要针对海选赛选拔为主，后续将更新正赛团队赛规则<br>
+        选拔规则请参考海选招募群内的相关规则<br>
+        如果计算器出现分数计算bug请和海选招募群群主小茶XPC反馈
     </div>
 
     <div id="noticeOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
         <div style="background:#fff;border-radius:10px;padding:22px;max-width:90%;width:360px;box-shadow:0 4px 20px rgba(0,0,0,.25);">
             <h4 style="margin:0 0 10px;color:#8c6d1f;">📢 更新公告</h4>
-            <div style="font-size:14px;line-height:1.7;color:#333;">感谢各位测试选手对京云杯#5海选内部测试的支持<br>计算器现已支持云端上传分数计算结果，分数计算结果仅用于内部对于规则的测试，不对外公布<br>请不要上传恶意计算数据，请记得填写选手id<br>修复了若干bug</div>
+            <div style="font-size:14px;line-height:1.7;color:#333;">感谢各位选手对京云杯#5的支持<br>京云杯#5海选赛现已开启<br>目前计分规则主要针对海选赛选拔为主，后续将更新正赛团队赛规则<br>选拔规则请参考海选招募群内的相关规则<br>如果计算器出现分数计算bug请和海选招募群群主小茶XPC反馈</div>
             <button onclick="closeNotice()" style="margin-top:14px;width:100%;padding:10px;border:none;border-radius:6px;background:#2196F3;color:#fff;font-size:14px;cursor:pointer;">我知道了</button>
         </div>
     </div>
@@ -558,7 +559,7 @@
     <div class="container">
         <!-- Left Side -->
         <div class="frame">
-            <h3>状态设置 <span style="font-size:12px;color:#999;">v0.799</span></h3>
+            <h3>状态设置 <span style="font-size:12px;color:#999;">v1.112</span></h3>
             <div class="label">选手姓名</div>
             <input id="player" class="input" type="text" placeholder="输入选手姓名">
 
@@ -608,15 +609,17 @@
                         <option>五层-过度繁殖</option>
                         <option>六层-同域共存</option>
                         <option>六层-命运共享</option>
-                        <option>三层-无效验尸</option>
-                        <option>四层-无效验尸</option>
-                        <option>五层-无效验尸</option>
-</select>
-                    <div class="checkbox-container">
-                        <label class="checkbox mult-checkbox"><input type="checkbox" id="heiliudi" onchange="emergencyMult(this)"> 黑流地脉</label>
-                        <label class="checkbox mult-checkbox"><input type="checkbox" id="qingxie" onchange="emergencyMult(this)"> 倾斜沙丘/去温栏/易碎同盟/停止点</label>
-                    </div>
+                    </select>
                     <button class="button" onclick="addEmergency()">添加紧急作战</button>
+                    <div class="divider"></div>
+                    <h3>特殊事件作战</h3>
+                    <div class="label">特殊事件作战</div>
+                    <select id="special" class="select">
+                        <option>紧急湖中魇</option>
+                        <option>紧急合伙人会议</option>
+                        <option>无效验尸（前四层）</option>
+                    </select>
+                    <button class="button" onclick="addSpecial()">添加特殊事件</button>
                 </div>
 
                 <!-- 分隔线 -->
@@ -627,14 +630,11 @@
                     <h3>领袖作战</h3>
                     <div class="label">领袖作战</div>
                     <select id="boss" class="select">
-                        <option>永无安宁</option>
                         <option>痛苦将息</option>
                         <option>混沌源阶理论</option>
                         <option>畸症（击杀玻利瓦尔，症结之核）通关</option>
-                        <option>畸症（生吃玻利瓦尔，症结之核）通关</option>
-                        <option>追猎畸症（击杀玻利瓦尔，症结之核）通关</option>
-                        <option>追猎畸症（生吃玻利瓦尔，症结之核）通关</option>
-</select>
+                        <option>畸症（没有击杀玻利瓦尔，症结之核）通关</option>
+                    </select>
                     <div class="checkbox-container">
                         <label class="checkbox"><input type="checkbox" id="noLeak"> 无漏通关</label>
                     </div>
@@ -643,15 +643,12 @@
                     <h3>追猎关卡</h3>
                     <div class="label">追猎关卡</div>
                     <select id="hunt" class="select">
-                        <option>二层-咩的朋友</option>
-                        <option>二层-一视同仁</option>
-                        <option>二层-外显尖牙</option>
-                        <option>三层-哀悼铁腕</option>
-                        <option>三层-赤金厄运</option>
-                        <option>三层-冰冷流亡</option>
-                        <option>四层-"闹乐"</option>
-                        <option>四层-"纵怒"</option>
-                        <option>四层-"灭身"</option>
+                        <option>外显尖牙</option>
+                        <option>哀悼铁腕</option>
+                        <option>赤金厄运</option>
+                        <option>闹乐</option>
+                        <option>灭身</option>
+                        <option>纵怒</option>
                     </select>
                     <button class="button" onclick="addHunt()">添加追猎关卡</button>
                 </div>
@@ -682,9 +679,28 @@
                 <div class="sp-row">
                     <span class="sp-label"></span>
                     <div class="sp-chk-row">
-                        <label class="chk"><input type="checkbox" id="nonhome"> 非本家5-6星数量0</label>
+                        <label class="chk"><input type="checkbox" id="god"> 击坠神明</label>
+                        <label class="chk"><input type="checkbox" id="light"> 湮没光明</label>
+                        <label class="chk"><input type="checkbox" id="civil"> 焚毁文明</label>
+                    </div>
+                </div>
+                <div class="sp-row">
+                    <span class="sp-label"></span>
+                    <div class="sp-chk-row">
                         <label class="chk"><input type="checkbox" id="nomud"> 全程无实托邦</label>
                         <label class="chk"><input type="checkbox" id="allhunt"> 全程追猎</label>
+                    </div>
+                </div>
+                <div class="sp-row">
+                    <span class="sp-label"></span>
+                    <div class="sp-chk-row">
+                        <button class="button" onclick="addGuofu()" style="padding:3px 10px;font-size:12px;">果腹补偿 +20</button>
+                    </div>
+                </div>
+                <div class="sp-row">
+                    <span class="sp-label">六层命运所指交出</span>
+                    <div class="sp-field">
+                        <input type="number" id="fate" value="0" min="0" style="width:60px;">
                     </div>
                 </div>
             </div>
@@ -725,88 +741,90 @@
     </div>
 
     <script>
-        const VERSION = '0.799';
+        const VERSION = '1.112';
         (function(){
             try {
-                if (!localStorage.getItem('notice_v0799')) {
+                if (!localStorage.getItem('notice_v1112b')) {
                     document.getElementById('noticeOverlay').style.display = 'flex';
                 }
             } catch(e) {}
         })();
         function closeNotice(){
             document.getElementById('noticeOverlay').style.display = 'none';
-            try { localStorage.setItem('notice_v0799','1'); } catch(e){}
+            try { localStorage.setItem('notice_v1112b','1'); } catch(e){}
         }
         let isConfirmed = 1;
 
 
 
-        function addEmergency() {
+                function addEmergency() {
             if(isConfirmed!==1){
                 alert("请勿在结算后添加作战");
                 return;
             }
             const emergencyDict = {
-                "三层-预算否决": 40,
-                "三层-生存习性": 40,
-                "三层-黑色逆流": 40,
-                "三层-辟路行进": 30,
-                "三层-趁火打劫": 30,
-                "三层-焦土之家": 30,
-                "三层-无效验尸": 100,
-                "四层-未来见闻": 100,
-                "四层-其他紧急": 80,
-                "四层-无效验尸": 80,
-                "五层-物欲遮天": 100,
-                "五层-恶意讨薪": 100,
-                "五层-送别仪式": 100,
-                "五层-彼处水如酒": 100,
-                "五层-一步之遥": 80,
-                "五层-丛林法则": 80,
-                "五层-过度繁殖": 80,
-                "五层-无效验尸": 50,
-                "六层-同域共存": 200,
-                "六层-命运共享": 150
+                "三层-预算否决": 20,
+                "三层-生存习性": 20,
+                "三层-黑色逆流": 20,
+                "三层-辟路行进": 15,
+                "三层-趁火打劫": 15,
+                "三层-焦土之家": 15,
+                "四层-未来见闻": 50,
+                "四层-其他紧急": 40,
+                "五层-物欲遮天": 50,
+                "五层-恶意讨薪": 50,
+                "五层-送别仪式": 50,
+                "五层-彼处水如酒": 50,
+                "五层-一步之遥": 40,
+                "五层-丛林法则": 40,
+                "五层-过度繁殖": 40,
+                "六层-同域共存": 100,
+                "六层-命运共享": 75
             };
             const type = document.getElementById('emergency').value;
             const layer = type.split("-")[0];
-            const basicScore = emergencyDict[type];
-            let mult = 1;
-            let mark = "";
-            let multName = "";
-            if (document.getElementById('heiliudi').checked) { mult = 2; mark = " 黑流地脉"; multName = "黑流地脉"; }
-            if (document.getElementById('qingxie').checked) { mult = 1.5; mark = " 倾斜沙丘"; multName = "倾斜沙丘"; }
-            if (multName === "") multName = "无";
-            let finalScore = Math.floor(basicScore * mult);
-
-            if (type.indexOf("无效验尸") > -1) {
-                insertCounter(`无效验尸 ${type}${mark}`, finalScore);
-                return;
-            }
-
+            const finalScore = emergencyDict[type];
             let oldScore = getEmergencyScore(layer);
             if (finalScore <= oldScore) {
                 return;
             }
             removeEmergencyLine(layer);
             let counterText = document.getElementById('counter').value;
-            counterText += `${type}${mark} ${finalScore}分\n`;
+            counterText += `${type} ${finalScore}分\n`;
             document.getElementById('counter').value = counterText;
             refreshScore(finalScore - oldScore);
         }
 
-        function getLayerMults(layer) {
-            let lines = document.getElementById('counter').value.split('\n');
-            let mults = new Set();
-            for (let i = 0; i < lines.length; i++) {
-                if (lines[i].startsWith(layer + "-")) {
-                    if (lines[i].indexOf('黑流地脉') > -1) mults.add('黑流地脉');
-                    else if (lines[i].indexOf('倾斜沙丘') > -1) mults.add('倾斜沙丘');
-                    else mults.add('无');
-                }
+        function addSpecial() {
+            if(isConfirmed!==1){
+                alert("请勿在结算后添加作战");
+                return;
             }
-            return mults;
+            const specialDict = {
+                "紧急湖中魇": 30,
+                "紧急合伙人会议": 50,
+                "无效验尸（前四层）": 50
+            };
+            const type = document.getElementById('special').value;
+            const finalScore = specialDict[type];
+            if (hasSpecial(type)) {
+                alert("该特殊事件已添加");
+                return;
+            }
+            let counterText = document.getElementById('counter').value;
+            counterText += `特·${type} ${finalScore}分\n`;
+            document.getElementById('counter').value = counterText;
+            refreshScore(finalScore);
         }
+        function hasSpecial(name) {
+            let lines = document.getElementById('counter').value.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].indexOf("特·" + name) === 0) return true;
+            }
+            return false;
+        }
+
+        
 
         function getEmergencyScore(layer) {
             let lines = document.getElementById('counter').value.split('\n');
@@ -839,30 +857,19 @@
             return removed;
         }
 
-        function emergencyMult(el) {
-            const h = document.getElementById('heiliudi');
-            const q = document.getElementById('qingxie');
-            if (h.checked && q.checked) {
-                if (el === h) q.checked = false;
-                else h.checked = false;
-            }
-        }
+        
 
-        function addBoss() {
+                        function addBoss() {
             if(isConfirmed!==1){
                 alert("请勿在结算后添加作战");
                 return;
             }
             const bossDict = {
-                "永无安宁": 0,
-                "痛苦将息": 600,
-                "混沌源阶理论": 500,
-                "畸症（击杀玻利瓦尔，症结之核）通关": 700,
-                "畸症（生吃玻利瓦尔，症结之核）通关": 400,
-                "追猎畸症（击杀玻利瓦尔，症结之核）通关": 800,
-                "追猎畸症（生吃玻利瓦尔，症结之核）通关": 500
+                "痛苦将息": 300,
+                "混沌源阶理论": 300,
+                "畸症（击杀玻利瓦尔，症结之核）通关": 500,
+                "畸症（没有击杀玻利瓦尔，症结之核）通关": 200
             };
-
             const bossType = document.getElementById('boss').value;
             const group = bossType.indexOf("畸症") > -1 ? "B" : "A";
             if (leaderGroupHas(group)) {
@@ -870,14 +877,12 @@
                 return;
             }
             let finalScore = bossDict[bossType];
-            let label = "领·" + bossType;
-
-            if (!document.getElementById('noLeak').checked) {
-                finalScore -= 100;
-                if (finalScore < 0) finalScore = 0;
+            // 没有击杀（放走最终boss）= 注定非无漏，不加无漏分
+            const isNoKill = bossType.indexOf("没有击杀") > -1;
+            if (!isNoKill && document.getElementById('noLeak').checked) {
+                finalScore += 50;
             }
-
-            insertCounter(label, finalScore);
+            insertCounter("领·" + bossType, finalScore);
         }
 
         function leaderGroupHas(group) {
@@ -891,30 +896,22 @@
             return false;
         }
 
-        function addHunt() {
+                function addHunt() {
             if(isConfirmed!==1){
                 alert("请勿在结算后添加作战");
                 return;
             }
             const huntDict = {
-                "二层-咩的朋友": 20,
-                "二层-一视同仁": 20,
-                "二层-外显尖牙": 30,
-                "三层-哀悼铁腕": 50,
-                "三层-赤金厄运": 50,
-                "三层-冰冷流亡": 40,
-                '四层-"闹乐"': 50,
-                '四层-"纵怒"': 50,
-                '四层-"灭身"': 50
+                "外显尖牙": 20,
+                "哀悼铁腕": 30,
+                "赤金厄运": 40,
+                "闹乐": 25,
+                "灭身": 30,
+                "纵怒": 40
             };
             const type = document.getElementById('hunt').value;
-            const layer = type.split("-")[0];
-            if (getHuntLayerCount(layer) >= 2) {
-                alert("该层追猎关卡最多添加两个");
-                return;
-            }
-            if (getHuntTotalCount() >= 4) {
-                alert("追猎关卡总数最多四个");
+            if (hasHunt(type)) {
+                alert("该追猎关卡已添加（同一关卡仅计1次）");
                 return;
             }
             let score = huntDict[type];
@@ -922,6 +919,13 @@
             counterText += `猎·${type} ${score}分\n`;
             document.getElementById('counter').value = counterText;
             refreshScore(score);
+        }
+        function hasHunt(name) {
+            let lines = document.getElementById('counter').value.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].indexOf("猎·" + name) === 0) return true;
+            }
+            return false;
         }
 
         function getHuntLayerCount(layer) {
@@ -1004,7 +1008,7 @@
             isConfirmed=1;
         }
 
-        function confirmScore() {
+                function confirmScore() {
             if(isConfirmed!==1){
                 alert("请勿重复结算");
                 return;
@@ -1016,8 +1020,15 @@
             const alpha = document.getElementById('alpha').checked;
             const beta = document.getElementById('beta').checked;
             const beacon = document.getElementById('beacon').checked;
+            const god = document.getElementById('god').checked;
+            const light = document.getElementById('light').checked;
+            const civil = document.getElementById('civil').checked;
+            const nomud = document.getElementById('nomud').checked;
+            const allhunt = document.getElementById('allhunt').checked;
             const submit = parseInt(document.getElementById('submit').value)||0;
+            const parts = parseInt(document.getElementById('parts').value)||0;
             const penal = Math.abs(parseInt(document.getElementById('penal').value)||0);
+            const fate = parseInt(document.getElementById('fate').value)||0;
             if (money > 40) {
                 let deducted = (money - 40) * 500;
                 insertCounter(`商店取钱${money}个`, -deducted);
@@ -1026,40 +1037,60 @@
             if (!mech) {
                 insertCounter("不抓取机械师", 300);
                 isConfirmed++;
-                if (sixN > 0) {
-                    let sixScore = 0;
-                    if (sixN <= 3) sixScore = 500;
-                    else if (sixN <= 6) sixScore = 200;
-                    else if (sixN > 9) sixScore = -200;
-                    if (sixScore !== 0) {
-                        insertCounter(`六星数量${sixN}个`, sixScore);
-                        isConfirmed++;
-                    }
+                let sixScore = 0;
+                if (sixN <= 3) sixScore = 300;
+                else if (sixN <= 5) sixScore = 200;
+                else if (sixN <= 8) sixScore = 100;
+                if (sixScore !== 0) {
+                    insertCounter(`六星数量${sixN}个`, sixScore);
+                    isConfirmed++;
                 }
             }
-            if (alpha) { insertCounter("沙盘α", 80); isConfirmed++; }
-            if (beta) { insertCounter("沙盘β", 100); isConfirmed++; }
+            if (alpha) { insertCounter("沙盘α", 40); isConfirmed++; }
+            if (beta) { insertCounter("沙盘β", 50); isConfirmed++; }
+            if (alpha && beta) { insertCounter("双沙盘", 100); isConfirmed++; }
             if (beacon) { insertCounter("怦然信标", 100); isConfirmed++; }
-            const nonhome = document.getElementById('nonhome').checked;
-            const nomud = document.getElementById('nomud').checked;
-            const allhunt = document.getElementById('allhunt').checked;
-            if (nonhome && ["突击战术分队","堡垒战术分队","破坏战术分队","远程战术分队"].indexOf(team) > -1) {
-                insertCounter("非本家5-6星数量0", 300); isConfirmed++;
-            }
+            let weakN = (god?1:0) + (light?1:0) + (civil?1:0);
+            let weakScore = 200 - (3 - weakN) * 500;
+            insertCounter(`三削弱藏${weakN}/3`, weakScore);
+            isConfirmed++;
             if (nomud && team === "文明开化分队") {
-                insertCounter("全程无实托邦", 200); isConfirmed++;
+                insertCounter("全程无实托邦", 100); isConfirmed++;
             }
             if (allhunt) {
-                insertCounter("全程追猎", 500); isConfirmed++;
+                insertCounter("全程追猎", 300); isConfirmed++;
             }
-            insertCounter(`结算分${submit}分`, Math.floor(submit * 0.3));
+            let coeff = 1;
+            if (team === "多边贸易分队") coeff = 0.9;
+            else if (team === "后勤分队") coeff = 0.95;
+            let calc = Math.floor((submit - 7.5 * parts) * 0.5 * coeff);
+            insertCounter(`结算分${submit}分`, calc);
+            isConfirmed++;
+            if (fate > 0) {
+                insertCounter(`命运所指交出${fate}个`, -fate * 500);
+            }
             if (penal > 0) {
                 insertCounter(`违规扣分${penal}分`, -penal);
             }
-            if (team === "多边贸易分队") {
-                let cur = parseInt(document.getElementById('end').value.split(':')[1]) || 0;
-                document.getElementById('end').value = "当前得分:" + Math.floor(cur * 0.9);
+        }
+
+        function addGuofu() {
+            if(isConfirmed!==1){
+                alert("请勿在结算后添加");
+                return;
             }
+            if (hasItem("果腹补偿")) {
+                alert("果腹补偿仅第一次触发加分");
+                return;
+            }
+            insertCounter("果腹补偿", 20);
+        }
+        function hasItem(prefix) {
+            let lines = document.getElementById('counter').value.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].indexOf(prefix) === 0) return true;
+            }
+            return false;
         }
         function clearAll() {
             document.getElementById('counter').value = '';
@@ -1088,6 +1119,7 @@
             var submit = document.getElementById('submit').value || '0';
             var penal = document.getElementById('penal').value || '0';
             var parts = document.getElementById('parts').value || '0';
+            var fate = document.getElementById('fate').value || '0';
             function chk(id){ return document.getElementById(id).checked ? '√' : '×'; }
             var now = new Date();
             function p2(n){ return (n<10?'0':'')+n; }
@@ -1107,10 +1139,11 @@
             content += '结算分：'+submit+'\n';
             content += '违规扣分：'+penal+'\n';
             content += '零件数量：'+parts+'\n';
+            content += '命运所指交出：'+fate+'\n';
             content += '特殊加分勾选：\n';
             content += '  沙盘α('+chk('alpha')+') 沙盘β('+chk('beta')+') 怦然信标('+chk('beacon')+')\n';
-            content += '  非本家5-6星数量0('+chk('nonhome')+') 全程无实托邦('+chk('nomud')+') 全程追猎('+chk('allhunt')+')\n';
-            content += '紧急加成：黑流地脉('+chk('heiliudi')+') 倾斜沙丘系('+chk('qingxie')+')\n';
+            content += '  击坠神明('+chk('god')+') 湮没光明('+chk('light')+') 焚毁文明('+chk('civil')+')\n';
+            content += '  全程无实托邦('+chk('nomud')+') 全程追猎('+chk('allhunt')+')\n';
             content += '--------------------------------\n';
             content += '【计分明细】\n';
             content += (counter || '（空）');
@@ -1172,54 +1205,45 @@
         <span>海选分数参考</span>
         <button class="rules-close" onclick="closeRules()">&times;</button>
     </div>
-    <div class="rules-body">
-        <p class="rule-formula"><b>总分 = 结算分×0.3 + 特殊加分 + 关卡加分 + 特殊藏品加分 &minus; 违规分数</b><br><span class="rules-note">（多边贸易分队得分系数 ×0.9）</span></p>
+        <div class="rules-body">
+        <p class="rule-formula"><b>总分 =（游戏结算分 − 7.5×零件）× 分队系数 × 0.5 + 规则加分 + 关卡加分 + 特殊藏品加分</b><br><span class="rules-note">分队系数：多边贸易 0.9、后勤 0.95、其他 1</span></p>
 
-        <h4>特殊加分</h4>
+        <h4>规则加分 · 阵容</h4>
         <ul>
-            <li>六星抓取数量加分：<br>不抓取机械师 <b>+300</b><br>不抓取机械师且六星数量(含临时) ≤3 <b>+500</b>、≤6 <b>+200</b>、＞9 <b>&minus;200</b></li>
-            <li>全程追猎不换探测先锋且通关追猎13（如有追忆该层也需追猎）<b>+500</b></li>
-            <li>四职业队非本家五六星数量为0（不含临时，重辅需不抓机械师）<b>+300</b></li>
-            <li>文明开化分队 全程无实托邦（不含希望的沃土）<b>+200</b></li>
+            <li>未抓机械师：六星数量(含临时) ≤3 <b>+300</b>、3~5 <b>+200</b>、5~8 <b>+100</b>（取最高档）</li>
+            <li>全程追猎：每层触发追猎且通过所有追猎关卡、不在失与得交换探测先锋 <b>+300</b><br><span class="rules-note">（小八界→安眠一隅不破坏；触发追忆该层也需追猎，且不重复计分）</span></li>
+            <li>文明开化分队 全程未触发实托邦（不含希望的沃土）<b>+100</b></li>
         </ul>
 
-        <h4>关卡加分 · 非结局关卡</h4>
+        <h4>关卡加分 · 非结局</h4>
         <ul>
-            <li><b>追猎关卡</b><br>二层 咩的朋友/一视同仁 <b>+20</b>，外显尖牙 <b>+30</b><br>三层 哀悼铁腕/赤金厄运 <b>+50</b>，冰冷流亡 <b>+40</b><br>四层 "闹乐"/"纵怒"/"灭身" <b>+50</b>（如持有追忆仅获取一次加分）</li>
-            <li><b>各层紧急关卡</b>（每层仅取最高分）<br>三层 预算否决/生存习性/黑色逆流 <b>+40</b>，辟路行进/趁火打劫/焦土之家 <b>+30</b><br>四层 未来见闻 <b>+100</b>，其他 <b>+80</b><br>五层 物欲遮天/恶意讨薪/送别仪式/彼处水如酒 <b>+100</b>，一步之遥/丛林法则/过度繁殖 <b>+80</b><br>六层 同域共存 <b>+200</b>，命运共享 <b>+150</b></li>
-            <li><b>无效验尸</b>（仅获取一次，取最高分）：三层通关 <b>+100</b>，四层通关 <b>+80</b>，五层通关 <b>+50</b></li>
+            <li><b>追猎关卡</b>（需无漏，同一关卡仅计1次）<br>外显尖牙 <b>+20</b>、哀悼铁腕 <b>+30</b>、赤金厄运 <b>+40</b>、闹乐 <b>+25</b>、灭身 <b>+30</b>、纵怒 <b>+40</b></li>
+            <li><b>特殊事件作战</b>（不重复计分）<br>紧急湖中魇 <b>+30</b>、紧急合伙人会议 <b>+50</b>、无效验尸（前四层）<b>+50</b></li>
+            <li><b>紧急加分</b>（每层取最高，漏怪不加）<br>三层 预算否决/生存习性/黑色逆流 <b>+20</b>，辟路行进/趁火打劫/焦土之家 <b>+15</b><br>四层 未来见闻 <b>+50</b>，其他 <b>+40</b><br>五层 物欲遮天/恶意讨薪/送别仪式/彼处水如酒 <b>+50</b>，一步之遥/丛林法则/过度繁殖 <b>+40</b><br>六层 同域共存 <b>+100</b>，命运共享 <b>+75</b></li>
         </ul>
 
-        <h4>关卡加分 · 结局关卡</h4>
+        <h4>关卡加分 · 结局</h4>
         <ul>
-            <li>永无安宁（普通一结局）<b>+0</b></li>
-            <li>痛苦将息（追猎一结局）<b>+600</b>（漏怪+500）</li>
-            <li>混沌源阶理论（二结局）<b>+500</b>（漏怪+400）</li>
-            <li>畸症（三结局）击杀玻利瓦尔，症结之核通关 <b>+700</b>（漏怪+600）；生吃玻利瓦尔，症结之核通关 <b>+400</b>；追猎额外 <b>+100</b></li>
+            <li>痛苦将息 <b>+300</b>（无漏额外 <b>+50</b>）</li>
+            <li>混沌源阶理论 <b>+300</b>（无漏额外 <b>+50</b>）</li>
+            <li>畸症 <b>+200</b>（击杀玻利瓦尔额外 <b>+300</b>；无漏额外 <b>+50</b>）</li>
         </ul>
 
         <h4>特殊藏品加分</h4>
         <ul>
-            <li>沙盘&alpha; <b>+80</b>，沙盘&beta; <b>+100</b>，怦然信标 <b>+100</b></li>
-        </ul>
-
-        <h4>实拓邦加分</h4>
-        <ul>
-            <li>黑流地脉（大狗年代）分数 <b>×2</b></li>
-            <li>倾斜沙丘（沙尘暴）/去温栏（冰冻）/易碎同盟（扣血）/停止点（气压）分数 <b>×1.5</b></li>
-            <li class="rules-note">非结局关卡如漏怪则不获得加分（漏怪不触发实拓邦额外加分）</li>
+            <li>沙盘α <b>+40</b>、沙盘β <b>+50</b>、双沙盘额外 <b>+100</b>、怦然信标 <b>+100</b></li>
+            <li>击坠神明/湮没光明/焚毁文明 <b>+200</b>，每缺一个 <b>−500</b>；每在第六层命运所指交出一个特定收藏品/源石锭 <b>−500</b></li>
+            <li>果腹：禁止主动获取并使用；单藏品不抓取补偿 <b>+20</b>（仅第一次）；强制获取不得使用效果，违规 <b>−200</b>；主动获取并使用总分计 <b>0</b> 分</li>
         </ul>
 
         <h4>注意事项</h4>
         <ul>
-            <li>1. 商店提取源石锭需≤40，每超出1源石锭 <b>&minus;500</b> 分</li>
-            <li>2. 第一把禁用开局襁褓，违规直接判负</li>
-            <li>3. 禁用果腹：单藏品出现不抓取可 <b>+15</b> 补偿（仅第一次）；失与得/不期而遇强制获取不能使用效果，违规一次 <b>&minus;200</b>；主动获取并使用总分计为 0 分</li>
-            <li>4. 进入第二层且未移动前，可申请一次重开并更换特勤分队烧水</li>
-            <li>5. 未达成海选要求扣分（仅顺利通关三结局触发）：<br>通关时三削弱藏（击坠神明/湮没光明/焚毁文明）每少持有 <b>&minus;500</b><br>仅持单沙盘且未通过二结局 <b>&minus;1000</b><br>六层命运所指每使用一个削弱藏 <b>&minus;500</b></li>
+            <li>1. 商店提取源石锭需≤40，每超出1 <b>−500</b> 分</li>
+            <li>2. 禁用“襁褓生灵”；海选两次比赛前后均不可获得，且不能使用相同支援选项</li>
+            <li>3. 进入第二层且未移动前，可申请一次重开更换特勤分队烧水（快速获得开局奖励）</li>
         </ul>
-        <p class="rules-note">（规则待更新）</p>
     </div>
+
 </aside>
 <button class="rules-toggle" onclick="toggleRules()">📖 规则</button>
 
