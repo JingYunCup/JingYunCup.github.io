@@ -1051,7 +1051,7 @@
             if (alpha && beta) { insertCounter("双沙盘", 100); isConfirmed++; }
             if (beacon) { insertCounter("怦然信标", 100); isConfirmed++; }
             let weakN = (god?1:0) + (light?1:0) + (civil?1:0);
-            let weakScore = 200 - (3 - weakN) * 500;
+            let weakScore = weakN * 200 - (3 - weakN) * 500;
             insertCounter(`三削弱藏${weakN}/3`, weakScore);
             isConfirmed++;
             if (nomud && team === "文明开化分队") {
@@ -1063,9 +1063,21 @@
             let coeff = 1;
             if (team === "多边贸易分队") coeff = 0.9;
             else if (team === "后勤分队") coeff = 0.95;
-            let calc = Math.floor((submit - 7.5 * parts) * 0.5 * coeff);
-            insertCounter(`结算分${submit}分`, calc);
+            let rawPart = 7.5 * parts;
+            let partDeductInt = Math.round(rawPart);
+            let calc = Math.floor((submit - rawPart) * 0.5 * coeff);
+            insertCounter(`游戏结算分${submit}分`, submit);
             isConfirmed++;
+            if (parts > 0) {
+                insertCounter(`零件扣分(7.5×${parts}个)`, -partDeductInt);
+                isConfirmed++;
+            }
+            let base = submit - partDeductInt;
+            let adjust = calc - base;
+            if (adjust !== 0) {
+                insertCounter(`结算分倍率(×0.5×${coeff})`, adjust);
+                isConfirmed++;
+            }
             if (fate > 0) {
                 insertCounter(`命运所指交出${fate}个`, -fate * 500);
             }
@@ -1232,7 +1244,7 @@
         <h4>特殊藏品加分</h4>
         <ul>
             <li>沙盘α <b>+40</b>、沙盘β <b>+50</b>、双沙盘额外 <b>+100</b>、怦然信标 <b>+100</b></li>
-            <li>击坠神明/湮没光明/焚毁文明 <b>+200</b>，每缺一个 <b>−500</b>；每在第六层命运所指交出一个特定收藏品/源石锭 <b>−500</b></li>
+            <li>击坠神明/湮没光明/焚毁文明 每持有一个 <b>+200</b>；每缺少一个 <b>−500</b>；每在第六层命运所指交出一个特定收藏品/源石锭 <b>−500</b></li>
             <li>果腹：禁止主动获取并使用；单藏品不抓取补偿 <b>+20</b>（仅第一次）；强制获取不得使用效果，违规 <b>−200</b>；主动获取并使用总分计 <b>0</b> 分</li>
         </ul>
 
