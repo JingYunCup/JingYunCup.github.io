@@ -43,7 +43,7 @@
             text-align: center;
             color: #777;
             cursor: pointer;
-            transition: all .2;
+            transition: all .2s;
         }
         .drop:hover, .drop.drag { border-color: #4CAF50; background: #f1f8f1; color: #2e7d32; }
         .drop b { font-size: 18px; display: block; margin-bottom: 6px; }
@@ -241,12 +241,14 @@ function parseTxt(text, filename) {
     d.submit = parseInt(grab(text, '结算分')) || 0;
     d.penal = parseInt(grab(text, '违规扣分')) || 0;
     d.parts = parseInt(grab(text, '零件数量')) || 0;
+    d.fate = parseInt(grab(text, '命运所指交出')) || 0;
     d.alpha = /沙盘α\(√\)/.test(text);
     d.beta = /沙盘β\(√\)/.test(text);
     d.beacon = /怦然信标\(√\)/.test(text);
     d.nonhome = /非本家5-6星数量0\(√\)/.test(text);
     d.nomud = /全程无实托邦\(√\)/.test(text);
     d.allhunt = /全程追猎\(√\)/.test(text);
+    d.weakN = (/击坠神明\(√\)/.test(text)?1:0) + (/湮没光明\(√\)/.test(text)?1:0) + (/焚毁文明\(√\)/.test(text)?1:0);
     d.heiliudi = /黑流地脉\(√\)/.test(text);
     d.qingxie = /倾斜沙丘系\(√\)/.test(text);
     var m = text.match(/当前得分[:：]\s*(-?\d+)/);
@@ -348,7 +350,7 @@ function renderTable(sorted) {
     var tbody = document.getElementById('dataTable').querySelector('tbody');
     thead.innerHTML = '<th data-k="player">排名/选手</th><th data-k="team">分队</th><th data-k="total">总分</th>'
         + '<th data-k="mech">机械师</th><th data-k="six">六星</th><th data-k="submit">结算分</th>'
-        + '<th data-k="penal">违规</th><th data-k="parts">零件</th><th>特殊加分</th><th data-k="version">版本</th><th>操作</th>';
+        + '<th data-k="penal">违规</th><th data-k="parts">零件</th><th data-k="weakN">三削弱</th><th data-k="fate">命运</th><th>特殊加分</th><th data-k="version">版本</th><th>操作</th>';
     tbody.innerHTML = sorted.map(function(r, i){
         var sp = [];
         if (r.alpha) sp.push('沙盘α'); if (r.beta) sp.push('沙盘β'); if (r.beacon) sp.push('信标');
@@ -359,7 +361,7 @@ function renderTable(sorted) {
         var idx = records.indexOf(r);
         return '<tr><td><span class="rank">' + (i+1) + '</span> ' + esc(r.player) + passBadge + '</td><td>' + esc(r.team) + '</td>'
             + '<td class="total num-right">' + r.total + '</td><td>' + mBadge + '</td><td class="num-right">' + r.six + '</td>'
-            + '<td class="num-right">' + r.submit + '</td><td class="num-right">' + r.penal + '</td><td class="num-right">' + r.parts + '</td><td>' + spTxt + '</td>'
+            + '<td class="num-right">' + r.submit + '</td><td class="num-right">' + r.penal + '</td><td class="num-right">' + r.parts + '</td><td class="num-right">' + r.weakN + '</td><td class="num-right">' + (r.fate||0) + '</td><td>' + spTxt + '</td>'
             + '<td>' + esc(r.version || '') + '</td>'
             + '<td><button onclick="deleteRecord(' + idx + ')" style="padding:2px 8px;border:none;border-radius:4px;background:#e74c3c;color:#fff;font-size:12px;cursor:pointer;">删除</button></td></tr>';
     }).join('');
@@ -408,9 +410,9 @@ function destroyCharts() {
 // ---------- 导出 CSV ----------
 function downloadCsv() {
     var list = getFiltered().slice().sort(function(a,b){ return b.total - a.total; });
-    var rows = [['排名','选手','分队','总分','是否抓机械师','六星数量','结算分','违规扣分','零件数量','版本','沙盘α','沙盘β','怦然信标','非本家','无实托邦','全程追猎']];
+    var rows = [['排名','选手','分队','总分','是否抓机械师','六星数量','结算分','违规扣分','零件数量','三削弱数量','版本','沙盘α','沙盘β','怦然信标','非本家','无实托邦','全程追猎']];
     list.forEach(function(r, i){
-        rows.push([i+1, r.player, r.team, r.total, r.mech, r.six, r.submit, r.penal, r.parts, r.version,
+        rows.push([i+1, r.player, r.team, r.total, r.mech, r.six, r.submit, r.penal, r.parts, r.weakN, r.version,
             r.alpha?'1':'0', r.beta?'1':'0', r.beacon?'1':'0', r.nonhome?'1':'0', r.nomud?'1':'0', r.allhunt?'1':'0']);
     });
     var csv = rows.map(function(r){ return r.map(function(c){ return '"' + String(c).replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
