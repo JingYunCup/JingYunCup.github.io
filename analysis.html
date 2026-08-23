@@ -43,7 +43,7 @@
             text-align: center;
             color: #777;
             cursor: pointer;
-            transition: all .2s;
+            transition: all .2;
         }
         .drop:hover, .drop.drag { border-color: #4CAF50; background: #f1f8f1; color: #2e7d32; }
         .drop b { font-size: 18px; display: block; margin-bottom: 6px; }
@@ -253,6 +253,9 @@ function parseTxt(text, filename) {
     d.qingxie = /倾斜沙丘系\(√\)/.test(text);
     var m = text.match(/当前得分[:：]\s*(-?\d+)/);
     d.total = m ? parseInt(m[1]) : 0;
+    if (/不抓取机械师/.test(text)) {
+        d.total = d.total - 300;
+    }
     d.detail = '';
     var c = text.split('【计分明细】')[1];
     if (c) { c = c.split('--------------------------------')[0]; d.detail = c.trim(); }
@@ -418,10 +421,10 @@ function downloadCsv() {
     var csv = rows.map(function(r){ return r.map(function(c){ return '"' + String(c).replace(/"/g, '""') + '"'; }).join(','); }).join('\n');
     var blob = new Blob(['\ufeff' + csv], {type:'text/csv;charset=utf-8'});
     var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
+    a.href = 网站.createObjectURL(blob);
     a.download = '海选成绩统计.csv';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(a.href);
+    网站.revokeObjectURL(a.href);
 }
 
 // 显示未通过结局开关
