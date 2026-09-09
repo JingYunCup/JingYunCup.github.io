@@ -574,7 +574,7 @@ body {
     <div class="brand">京云杯 #5</div>
     <div class="links">
         <a href="#rank">排行榜</a>
-        <!-- 赛程规划未开始，暂隐藏 <a href="#schedule">赛程</a> -->
+        <a href="#schedule">赛程</a>
         <a href="#teams">队伍</a>
         <a href="#rules">规则</a>
         <span class="nav-status"><i></i>正赛进行中</span>
@@ -610,7 +610,7 @@ body {
 </div>
 
 <!-- 赛程规划（大区域：日期导航 + 当日场次内嵌详情） -->
-<div class="section" id="schedule" style="display:none">
+<div class="section" id="schedule">
     <div class="ruler-head">
         <span class="cross"></span><span class="rt">赛程规划</span>
         <span class="rd"></span><span class="note" style="font-size:13px;color:var(--text2);">灰=初赛 / 青=决赛 · 点击日期查看当日选手详情</span><span class="cross"></span>
@@ -858,38 +858,9 @@ function renderSchedDates(){
 function renderSchedDay(i){
     const d = SCHED_DAYS[i];
     const body = document.getElementById('schedBody');
-    const isPre = d.kind==='pre';
-    if (!d.players){
-        body.innerHTML = `<div class="day-head"><span class="big">${d.date} ${d.week}</span><span class="tag">${d.phase}</span></div>
-        <div style="font-size:14px;color:var(--text2);">${d.desc||''} · 对阵安排将于开赛前公布</div>`;
-        return;
-    }
-    const units = d.players.map((nm,idx)=>{
-        const p = PLAYERS[nm];
-        const done = isPre ? !!d.done : false;
-        const times = daySessionTimes(d.players.length);
-        const time = times[idx] || '';
-        const stamp = done
-            ? `<div class="stamp done">已完赛 · 最终 ${p.score.final} 分</div>`
-            : `<div class="stamp wait">待开赛</div>`;
-        return `<div class="sched-unit">
-            <div class="sched-card" data-name="${nm}" data-done="${done}" data-time="${time}">
-                <div class="av">${PLAYER_AVATARS[nm]?`<img src="data:image/jpeg;base64,${PLAYER_AVATARS[nm]}" alt="${nm}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">`:nm.slice(0,1)}</div>
-                <div class="sc-info">
-                    <div class="sn">${nm}</div>
-                    <div class="st">${p.team}</div>
-                    ${stamp}
-                </div>
-                ${done?(p.replay?`<a class="sc-play" href="${p.replay}" target="_blank" title="已完赛 · 查看回放"></a>`:'<div class="sc-play" title="已完赛 · 暂无回放"></div>'):''}
-                ${TEAM_LOGOS[p.team]
-                    ? `<img class="sc-badge" src="${TEAM_LOGOS[p.team]}" title="${p.team}" alt="${p.team}">`
-                    : `<div class="sc-badge" style="background:${TEAM_COLORS[p.team]||'#9ca3af'}" title="${p.team}">${(p.team||'?').slice(0,1)}</div>`}
-            </div>
-            <div class="player-detail">${playerDetailHtml(nm, done, time)}</div>
-        </div>`;
-    }).join('');
+    // 对阵尚未公布：仅保留日期导航与阶段，不展示具体谁打
     body.innerHTML = `<div class="day-head"><span class="big">${d.date} ${d.week}</span><span class="tag">${d.phase}</span></div>
-    <div class="sched-grid">${units}</div>`;
+    <div style="font-size:14px;color:var(--text2);">${d.desc||''} · 对阵安排将于开赛前公布</div>`;
 }
 renderSchedDates();
 renderSchedDay(0);
