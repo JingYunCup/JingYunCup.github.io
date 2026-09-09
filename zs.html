@@ -2083,9 +2083,9 @@ const OP_AVATARS = {
         let pTotal = 0, tTotal = 0;
 
         // ===== 管理员口令（XOR 混淆，防止源码明文）=====
-        // 默认口令：jinyun5
+        // 默认口令：65707750
         const KEY_MASK = 0x5A;
-        const KEY_ENC = [0x30,0x33,0x34,0x23,0x2F,0x34,0x6F];
+        const KEY_ENC = [0x6C,0x6F,0x6D,0x6A,0x6D,0x6D,0x6F,0x6A];
         function checkKey(k){
             if(!k) return false;
             let arr = [];
