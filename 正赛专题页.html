@@ -1412,10 +1412,17 @@ function toggleRules(){ document.getElementById('rulesPanel').classList.toggle('
     }
     function baseName(f){
         let nm = String(f);
-        if (nm.indexOf('正赛/')===0) nm = nm.slice(2);
+        if (nm.indexOf('正赛/')===0) nm = nm.slice(3);
         if (nm.slice(-4)==='.txt') nm = nm.slice(0,-4);
         return nm;
     }
+        function currentTeamFull(){
+            try{
+                var ov = JSON.parse(localStorage.getItem(OVERRIDE_KEY) || 'null');
+                if(ov && Array.isArray(ov.teamFull)) return ov;
+            }catch(e){}
+            return { teamFull: JSON.parse(JSON.stringify(TEAM_FULL)) };
+        }
     window.cloudPull = function(silent){
         fetch(CLOUD + '/ztlist')
         .then(function(r){ return r.json(); })
@@ -1430,7 +1437,7 @@ function toggleRules(){ document.getElementById('rulesPanel').classList.toggle('
                     .catch(function(){ return {nm:nm, o:null}; });
             });
             return Promise.all(pulls).then(function(list){
-                const base = collectOverride();
+                const base = currentTeamFull();
                 const tMap = {}; base.teamFull.forEach(function(t){ tMap[t.name]=t; });
                 let changed = false, pulled = 0;
                 list.forEach(function(it){
@@ -1453,7 +1460,7 @@ function toggleRules(){ document.getElementById('rulesPanel').classList.toggle('
         .catch(function(e){ if(!silent) alert('云端拉取失败：'+e); });
     };
     window.cloudUpload = function(){
-        const data = collectOverride();
+        const data = currentTeamFull();
         let done = 0;
         const ups = data.teamFull.map(function(t){
             const st = teamToTeamState(t);
