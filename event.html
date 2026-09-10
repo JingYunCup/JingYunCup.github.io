@@ -183,7 +183,7 @@ body {
     display:flex; align-items:baseline; gap:12px; margin-bottom:22px;
 }
 .ruler-head .cross { display:none; }
-.ruler-head .rt { font-size:22px; font-weight:700; letter-spacing:-0.4px; color: var(--ink); }
+.ruler-head .rt { font-size:22px; font-weight:700; letter-spacing:-0.4px; color: var(--ink); white-space:nowrap; }
 .ruler-head .rt::before {
     content: '0' counter(sec) ' / ';
     font-size:13px; font-weight:800; letter-spacing:2px; color: var(--cyan);
@@ -564,7 +564,7 @@ body {
     .topnav .links { gap:16px; }
     .nav-status { display:none; }
 }
-@media (max-width:640px){ .hero-caption{ display:none; } .rank-card .info .tname, .team-card .thead .tname{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .rank-card .info .tname{ font-size:13px; letter-spacing:1px; } .team-card .thead .tname{ font-size:15px; } }
+@media (max-width:640px){ .hero-caption{ display:none; } .ruler-head .rt{ font-size:17px; } .ruler-head .note{ display:none; } .rank-card .info .tname, .team-card .thead .tname{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .rank-card .info .tname{ font-size:13px; letter-spacing:1px; } .team-card .thead .tname{ font-size:15px; } }
 @media (max-width:560px){ .stamp-grid { grid-template-columns:repeat(2,1fr); } .hstat .n { font-size:20px; } }
 </style>
 </head>
