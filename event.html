@@ -859,19 +859,38 @@ function renderSchedDates(){
 function renderSchedDay(i){
     const d = SCHED_DAYS[i];
     const body = document.getElementById('schedBody');
-    const list = d.players || [];
-    const head = `<div class="day-head"><span class="big">${d.date} ${d.week}</span><span class="tag">${d.phase}</span></div>`;
-    if (list.length === 0){
-        body.innerHTML = head + `<div style="font-size:14px;color:var(--text2);padding:8px 0;">该日对阵安排将于开赛前公布</div>`;
+    const isPre = d.kind==='pre';
+    if (!d.players){
+        body.innerHTML = `<div class="day-head"><span class="big">${d.date} ${d.week}</span><span class="tag">${d.phase}</span></div>
+        <div style="font-size:14px;color:var(--text2);">${d.desc||''} · 对阵安排将于开赛前公布</div>`;
         return;
     }
-    const units = list.map((nm, idx) => {
-        const p = PLAYERS[nm] || {};
-        const tm = p.team || '';
-        const av = PLAYER_AVATARS[nm] ? `<img src="data:image/jpeg;base64,${PLAYER_AVATARS[nm]}" alt="${nm}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : nm.slice(0,1);
-        return `<div class="sched-card"><div class="sn">第${idx+1}场</div><div class="sched-unit"><div class="av">${av}</div><div class="sc-info"><div class="pn">${nm}</div><div class="pt">${tm}</div></div><div class="st">未完赛</div></div></div>`;
+    const units = d.players.map((nm,idx)=>{
+        const p = PLAYERS[nm];
+        const done = isPre ? !!d.done : false;
+        const times = daySessionTimes(d.players.length);
+        const time = times[idx] || '';
+        const stamp = done
+            ? `<div class="stamp done">已完赛 · 最终 ${p.score.final} 分</div>`
+            : `<div class="stamp wait">未完赛</div>`;
+        return `<div class="sched-unit">
+            <div class="sched-card" data-name="${nm}" data-done="${done}" data-time="${time}">
+                <div class="av">${PLAYER_AVATARS[nm]?`<img src="data:image/jpeg;base64,${PLAYER_AVATARS[nm]}" alt="${nm}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">`:nm.slice(0,1)}</div>
+                <div class="sc-info">
+                    <div class="sn">${nm}</div>
+                    <div class="st">${p.team}</div>
+                    ${stamp}
+                </div>
+                ${done?(p.replay?`<a class="sc-play" href="${p.replay}" target="_blank" title="已完赛 · 查看回放"></a>`:'<div class="sc-play" title="已完赛 · 暂无回放"></div>'):''}
+                ${TEAM_LOGOS[p.team]
+                    ? `<img class="sc-badge" src="${TEAM_LOGOS[p.team]}" title="${p.team}" alt="${p.team}">`
+                    : `<div class="sc-badge" style="background:${TEAM_COLORS[p.team]||'#9ca3af'}" title="${p.team}">${(p.team||'?').slice(0,1)}</div>`}
+            </div>
+            <div class="player-detail">${playerDetailHtml(nm, done, time)}</div>
+        </div>`;
     }).join('');
-    body.innerHTML = head + `<div class="sched-grid">${units}</div>`;
+    body.innerHTML = `<div class="day-head"><span class="big">${d.date} ${d.week}</span><span class="tag">${d.phase}</span></div>
+    <div class="sched-grid">${units}</div>`;
 }
 renderSchedDates();
 renderSchedDay(0);
