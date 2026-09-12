@@ -2438,10 +2438,24 @@ const OP_AVATARS = {
 
             saveLS(s);
             readTeamState();
-            fetch(CLOUD + '/zt', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ team: teamKey(), content: JSON.stringify(s[teamKey()]) })
-            }).then(function(r){ return r.json(); })
+            var payload = s[teamKey()];
+            // 先把云端已有的 players（专题页写入的选手开局/预抓位）取回来，避免上传时被清掉
+            fetch(CLOUD + '/ztfile?name=' + encodeURIComponent(teamKey()))
+              .then(function(r){ return r.text(); })
+              .then(function(txt){ try{ return JSON.parse(txt); }catch(e){ return null; } })
+              .catch(function(){ return null; })
+              .then(function(rmt){
+                  var hasLocal = Array.isArray(payload.players) && payload.players.length > 0;
+                  if (!hasLocal && rmt && Array.isArray(rmt.players) && rmt.players.length > 0){
+                      payload.players = rmt.players;
+                      saveLS(s);
+                  }
+                  return fetch(CLOUD + '/zt', {
+                      method: 'POST', headers: {'Content-Type': 'application/json'},
+                      body: JSON.stringify({ team: teamKey(), content: JSON.stringify(payload) })
+                  });
+              })
+              .then(function(r){ return r.json(); })
               .then(function(d){ alert(d.ok ? '上传成功，本队状态已同步云端' : ('云端上传失败：' + (d.error||'未知'))); })
               .catch(function(e){ alert('云端上传失败：' + e); });
             readTeamState();
