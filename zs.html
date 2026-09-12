@@ -950,7 +950,7 @@
                 <input id="adminKey" class="input" type="password" placeholder="输入口令">
                 <div class="horizontal">
                     <button class="button" onclick="readTeamState()">读取本队</button><button class="button" onclick="readCloud()">从云端读取</button><button class="button" onclick="clearCloud()">清除云端</button>
-                    <button class="button" onclick="uploadResult()">上传结果</button>
+                    <button class="button" id="btnUpload" onclick="uploadResult()">上传结果</button>
                 </div>
             </div>
 
@@ -1109,6 +1109,10 @@
                     <div class="sp-row">
                         <span class="sp-label">追猎层数</span>
                         <input id="huntLayer" class="input" type="number" placeholder="输入层数">
+                    </div>
+                    <div class="sp-row">
+                        <span class="sp-label">其中源私钥</span>
+                        <input id="srcKeyN" class="input" type="number" placeholder="队长提交不扣分">
                     </div>
                     <div class="sp-row">
                         <span class="sp-label"></span>
@@ -2164,10 +2168,10 @@ const OP_AVATARS = {
 
         // ===== 结局 =====
         function hasEndingA(){
-            return items.some(it => it.label.indexOf('痛苦将息')>-1 || it.label.indexOf('混沌源阶理论')>-1);
+            return items.some(it => it.label.indexOf('结局·')===0 && (it.label.indexOf('痛苦将息')>-1 || it.label.indexOf('混沌源阶理论')>-1));
         }
         function hasEndingB(){
-            return items.some(it => it.label.indexOf('畸症')>-1);
+            return items.some(it => it.label.indexOf('结局·')===0 && it.label.indexOf('畸症')>-1);
         }
         function onBossChange(){
             let v = document.getElementById('boss').value;
@@ -2203,8 +2207,69 @@ const OP_AVATARS = {
             '不期而遇-开业剪彩','不期而遇-湖中魇','不期而遇-合伙人会议',
             '追猎-外显尖牙','追猎-纵怒','追猎-灭身'
         ];
+        // ===== 团队台账：以每名选手 results 快照派生（重录/清空不会重复计分）=====
+        // 旧格式 results（无本场快照字段）迁移：把无法归因的历史量收进 baseLedger 冻结起来
+        function migrateLedger(st){
+            if (!st || st.baseLedger) return st;
+            let r = (st.results && typeof st.results==='object') ? st.results : {};
+            let sumTake = 0;
+            Object.keys(r).forEach(function(k){
+                let x = r[k]; if(!x || typeof x!=='object') return;
+                if (typeof x.take !== 'number' && typeof x.bank === 'number') x.take = x.bank;
+                if (typeof x.take === 'number') sumTake += x.take;
+            });
+            st.baseLedger = {
+                stamps: Array.isArray(st.stampDone) ? st.stampDone.slice() : [],
+                stoneSum: st.stoneSum||0,
+                allHuntCount: st.allHuntCount||0,
+                moneyUsed: Math.max(0, (st.moneyUsed||0) - sumTake),
+                bossChijin: !!st.bossChijin, bossAidao: !!st.bossAidao, bossChaos: !!st.bossChaos
+            };
+            return st;
+        }
+        function ledgerOf(st){
+            let led = { stamps: [], moneyUsed: 0, stoneSum: 0, allHuntCount: 0,
+                        bossChijin:false, bossAidao:false, bossChaos:false, moneyOver: 0 };
+            let set = {};
+            if (st) migrateLedger(st);
+            let hunt = 0;
+            if (st && st.baseLedger){
+                let b = st.baseLedger;
+                (b.stamps||[]).forEach(function(n){ set[n]=1; });
+                led.moneyUsed += b.moneyUsed||0;
+                led.stoneSum += b.stoneSum||0;
+                hunt += b.allHuntCount||0;
+                if (b.bossChijin) led.bossChijin = true;
+                if (b.bossAidao) led.bossAidao = true;
+                if (b.bossChaos) led.bossChaos = true;
+            }
+            if (st && Array.isArray(st.stampDone)) st.stampDone.forEach(function(n){ set[n]=1; });
+            let r = (st && st.results && typeof st.results==='object') ? st.results : {};
+            Object.keys(r).forEach(function(k){
+                let x = r[k]; if(!x || typeof x!=='object') return;
+                if (Array.isArray(x.stamps)) x.stamps.forEach(function(n){ set[n]=1; });
+                if (typeof x.take==='number') led.moneyUsed += x.take;
+                if (typeof x.stone==='number') led.stoneSum += x.stone;
+                if (x.allHunt) hunt += 1;
+                if (x.bossChijin) led.bossChijin = true;
+                if (x.bossAidao) led.bossAidao = true;
+                if (x.bossChaos) led.bossChaos = true;
+            });
+            led.stamps = Object.keys(set);
+            led.allHuntCount = Math.min(hunt, 2);
+            led.moneyOver = Math.max(0, led.moneyUsed - 200);
+            return led;
+        }
+        function captainOf(st){ return (st && st.captainName) || ''; }
+        function syncLedger(st){
+            let led = ledgerOf(st);
+            st.stampDone = led.stamps; st.moneyUsed = led.moneyUsed; st.stoneSum = led.stoneSum;
+            st.allHuntCount = led.allHuntCount;
+            st.bossChijin = led.bossChijin; st.bossAidao = led.bossAidao; st.bossChaos = led.bossChaos;
+            return led;
+        }
         function initStampSelect(){
-            let done = mode==='match' ? (getTeamState()[teamKey()].stampDone||[]) : [];
+            let done = mode==='match' ? ledgerOf(getTeamState()[teamKey()]).stamps : [];
             let sel = document.getElementById('stampSelect');
             sel.innerHTML = '';
             // 未完成的关卡在前
@@ -2228,7 +2293,7 @@ const OP_AVATARS = {
             let name = document.getElementById('stampSelect').value;
             if(!name) return;
             let st = mode==='match' ? getTeamState()[teamKey()] : null;
-            if(st && (st.stampDone||[]).indexOf(name)>-1){ alert('该关卡本队已打过，无法得分'); return; }
+            if(st && ledgerOf(st).stamps.indexOf(name)>-1){ alert('该关卡本队已打过，无法得分'); return; }
             if(items.some(it => it.label.indexOf('急·'+name)===0)){ alert('该关卡已添加'); return; }
             insertCounter('急·'+name, 30, 't');
             renderStampArea();
@@ -2243,7 +2308,7 @@ const OP_AVATARS = {
             let area = document.getElementById('stampArea');
             let mine = items.filter(it => it.label.indexOf('急·')===0);
             let st = mode==='match' ? getTeamState()[teamKey()] : null;
-            let done = st ? (st.stampDone||[]) : [];
+            let done = st ? ledgerOf(st).stamps : [];
             if(mine.length===0 && done.length===0){ area.innerHTML = '尚未添加'; return; }
             let html = '';
             mine.forEach(function(it){
@@ -2259,6 +2324,7 @@ const OP_AVATARS = {
         // ===== 清空所有团队积分设置 =====
         function clearTeamScore(){
             if(isConfirmed !== 1){ alert('请勿在结算后清空'); return; }
+            if(!confirm('清空团队积分设置？\n仅清空本场次团队计分项与输入，已上传成绩与首通台账不受影响。')) return;
             // 1. 清除团队计分项（items 中 type==='t'）
             items = items.filter(it => it.type !== 't');
             // 2. 清空已抓取干员
@@ -2266,10 +2332,8 @@ const OP_AVATARS = {
             let k = teamKey();
             if(mode === 'match'){
                 let st = s[k] || {};
-                st.ops = []; st.stampDone = [];
-                st.moneyUsed = 0; st.allHuntCount = 0;
-                st.bossChijin = false; st.bossAidao = false; st.bossChaos = false;
-                st.stoneSum = 0;
+                st.ops = [];            // 仅清本场次干员，台账由 results 派生恢复
+                syncLedger(st);
                 saveLS(s);
             } else {
                 trainOps.ops = [];
@@ -2291,7 +2355,7 @@ const OP_AVATARS = {
             renderStampArea();
             renderOpArea();
             if(mode === 'match') initStampSelect();
-            alert('已清空团队积分设置（干员/紧急/取钱/追猎/实托邦/boss）');
+            alert('已清空本场次团队设置（干员/紧急/取钱/追猎/实托邦/boss）\n首通台账与已上传成绩保持不动。');
         }
 
         // ===== 结算 =====
@@ -2318,6 +2382,11 @@ const OP_AVATARS = {
         function confirmScore(){
             if(isConfirmed !== 1){ alert('请勿重复结算'); return; }
             let __before = items.length;
+            let __pname = (document.getElementById('player').value || '').trim();
+            if(mode === 'match' && identity === 'captain'){
+                let __cap = captainOf(getTeamState()[teamKey()]);
+                if(__cap && __pname && __cap !== __pname){ alert('本队队长已登记为「' + __cap + '」，不能将「' + __pname + '」按队长结算'); return; }
+            }
 
             // ===== 个人积分 =====
             let submit = parseInt(document.getElementById('submit').value) || 0;
@@ -2340,7 +2409,14 @@ const OP_AVATARS = {
             let fd = document.getElementById('fudeLayer').value;
             if(fd !== ''){ let n = parseInt(fd)||0; if(n>0) insertCounter('复得之轮强制', -(7-n)*90, 'p'); }
             let ws = parseInt(document.getElementById('weakSubmit').value) || 0;
-            if(ws > 0) insertCounter('削弱藏提交', -ws*500, 'p');
+            let wsk = 0;
+            if(identity === 'captain'){
+                let el = document.getElementById('srcKeyN');
+                wsk = el ? Math.min(parseInt(el.value) || 0, ws) : 0;
+            }
+            let wsEff = ws - wsk;
+            if(wsEff > 0) insertCounter('削弱藏提交', -wsEff*500, 'p');
+            if(wsk > 0) insertCounter('削弱藏·源私钥（队长豁免）', 0, 'p');
             if(document.getElementById('blank').checked) insertCounter('沙盘空白', -300, 'p');
 
             // 队长专属（个人）
@@ -2364,7 +2440,7 @@ const OP_AVATARS = {
             if(document.getElementById('allHunt').checked){
                 if(mode === 'match'){
                     let st = getTeamState()[teamKey()];
-                    if(st.allHuntCount >= 2){ alert('本队全程追猎已满2人次，本次不计分'); }
+                    if(ledgerOf(st).allHuntCount >= 2){ alert('本队全程追猎已满2人次，本次不计分'); }
                     else { insertCounter('全程追猎', 500, 't'); }
                 } else {
                     insertCounter('全程追猎', 500, 't');
@@ -2376,7 +2452,7 @@ const OP_AVATARS = {
 
             let take = parseInt(document.getElementById('overMoney').value) || 0;
             if(take > 0){
-                let mUsed = mode==='match' ? (getTeamState()[teamKey()].moneyUsed||0) : 0;
+                let mUsed = mode==='match' ? ledgerOf(getTeamState()[teamKey()]).moneyUsed : 0;
                 let over = (mUsed + take) - 200;
                 if(over > 0) insertCounter('超额取钱', -over*50, 't');
                 else insertCounter('取钱'+take+'（未超额）', 0, 't');
@@ -2393,15 +2469,16 @@ const OP_AVATARS = {
             initStampSelect();
             renderStampArea();
             // boss 首通锁定
-            document.getElementById('bossChijin').disabled = !!st.bossChijin;
-            document.getElementById('bossAidao').disabled = !!st.bossAidao;
-            document.getElementById('bossChaos').disabled = !!st.bossChaos;
+            let led = syncLedger(st);
+            document.getElementById('bossChijin').disabled = !!led.bossChijin;
+            document.getElementById('bossAidao').disabled = !!led.bossAidao;
+            document.getElementById('bossChaos').disabled = !!led.bossChaos;
             // 取钱余额
-            let left = 200 - (st.moneyUsed||0);
-            document.getElementById('moneyLeft').textContent = '队伍可取余额：' + Math.max(left,0) + '（已取' + (st.moneyUsed||0) + '）';
-            // 全程追猎人次
-            document.getElementById('huntInfo').textContent = '全程追猎已' + (st.allHuntCount||0) + '/2人次';
-            if(st.allHuntCount >= 2) document.getElementById('allHunt').disabled = true;
+            let left = 200 - led.moneyUsed;
+            document.getElementById('moneyLeft').textContent = '队伍可取余额：' + Math.max(left,0) + '（已取' + led.moneyUsed + '）';
+            // 全程追猎人次 / 队长
+            document.getElementById('huntInfo').textContent = '全程追猎已' + led.allHuntCount + '/2人次' + '　队长：' + (captainOf(st) || '未登记');
+            if(led.allHuntCount >= 2) document.getElementById('allHunt').disabled = true;
             else document.getElementById('allHunt').disabled = false;
         }
 
@@ -2413,48 +2490,64 @@ const OP_AVATARS = {
             if(isConfirmed === 1){ alert('请先点击结算!'); return; }
             let s = getTeamState();
             let st = s[teamKey()];
-            if(identity === 'captain' && st.captainSubmitted){ alert('本队已提交过队长计分，不可重复提交'); return; }
+            var pname = (document.getElementById('player').value || '').trim();
+            if(!pname){ alert('请先选择选手'); return; }
 
-            // 合并紧急悬赏
-            items.filter(it => it.label.indexOf('急·')===0).forEach(function(it){
-                let n = it.label.replace('急·','');
-                if((st.stampDone||[]).indexOf(n)<0) st.stampDone.push(n);
-            });
-            // boss 首通
-            if(document.getElementById('bossChijin').checked) st.bossChijin = true;
-            if(document.getElementById('bossAidao').checked) st.bossAidao = true;
-            if(document.getElementById('bossChaos').checked) st.bossChaos = true;
-            // 全程追猎人次
-            if(document.getElementById('allHunt').checked && st.allHuntCount < 2) st.allHuntCount++;
-            // 取钱
+            // 队长身份锁定：以首次登记的队长为准
+            if(identity === 'captain'){
+                let cap = captainOf(st);
+                if(cap && cap !== pname){ alert('本队队长已登记为「' + cap + '」，不能将「' + pname + '」按队长提交'); return; }
+                if(!cap && st.captainSubmitted){ alert('本队已提交过队长计分，不可重复提交'); return; }
+            } else if(captainOf(st) === pname){
+                if(!confirm('「' + pname + '」已登记为本队队长，按队员提交将丢失队长专属加分。确定继续？')) return;
+            }
+
+            // 本场数值
             let take = parseInt(document.getElementById('overMoney').value) || 0;
-            st.moneyUsed += take;
-            // 实托邦
             let sc = parseInt(document.getElementById('stoneCount').value) || 0;
-            st.stoneSum += sc;
-            // 队长标记
-            if(identity === 'captain') st.captainSubmitted = true;
+            let useAllHunt = document.getElementById('allHunt').checked;
+            let newStamps = items.filter(function(it){ return it.label.indexOf('急·')===0; })
+                                .map(function(it){ return it.label.replace('急·',''); });
+
+            // 先回滚该选手上一版贡献（重录/更正不会重复累加）
+            if (st.results && st.results[pname] && typeof st.results[pname] === 'object'){
+                let old = st.results[pname];
+                if (Array.isArray(old.stamps) && Array.isArray(st.stampDone)){
+                    st.stampDone = st.stampDone.filter(function(n){ return old.stamps.indexOf(n) < 0; });
+                }
+                delete st.results[pname];
+            }
             // 得分对齐（与专题页字段一致：个人得分 / 团队加分）
             st.personal = pTotal;
             st.team = tTotal;
             // 本场选手结果（专题页据此显示 个人分 / 完赛 / 实际抓位）
-            var pname = (document.getElementById('player').value || '').trim();
-            if (pname){
-                if (!st.results || typeof st.results !== 'object') st.results = {};
-                st.results[pname] = {
-                    personal: pTotal,
-                    team: tTotal,
-                    final: pTotal + tTotal,
-                    bank: take,
-                    grabbed: (st.ops || []).slice(),
-                    endings: items.filter(function(it){ return it.label.indexOf('结局·') === 0; })
-                                  .map(function(it){ return it.label.replace('结局·',''); }),
-                    finished: true
-                };
-            }
+            if (!st.results || typeof st.results !== 'object') st.results = {};
+            st.results[pname] = {
+                personal: pTotal,
+                team: tTotal,
+                final: pTotal + tTotal,
+                bank: take,
+                stamps: newStamps,
+                take: take,
+                stone: sc,
+                allHunt: useAllHunt,
+                bossChijin: document.getElementById('bossChijin').checked,
+                bossAidao: document.getElementById('bossAidao').checked,
+                bossChaos: document.getElementById('bossChaos').checked,
+                grabbed: (st.ops || []).slice(),
+                endings: items.filter(function(it){ return it.label.indexOf('结局·') === 0; })
+                              .map(function(it){ return it.label.replace('结局·',''); }),
+                finished: true
+            };
+            // 队长登记
+            if(identity === 'captain'){ st.captainName = pname; st.captainSubmitted = true; }
+            // 台账按 results 派生（幂等）
+            syncLedger(st);
 
             saveLS(s);
             readTeamState();
+            var btnUpload = document.getElementById('btnUpload');
+            if(btnUpload) btnUpload.disabled = true;
             var payload = s[teamKey()];
             // 先把云端已有的 players（专题页写入的选手开局/预抓位）取回来，避免上传时被清掉
             fetch(CLOUD + '/ztfile?name=' + encodeURIComponent(teamKey()))
@@ -2486,7 +2579,8 @@ const OP_AVATARS = {
                       alert('云端上传失败：' + (d.error||'未知'));
                   }
               })
-              .catch(function(e){ alert('云端上传失败：' + e); });
+              .catch(function(e){ alert('云端上传失败：' + e); })
+              .then(function(){ var b = document.getElementById('btnUpload'); if(b) b.disabled = false; });
             readTeamState();
         }
 
@@ -2515,6 +2609,9 @@ const OP_AVATARS = {
                   let merged = Object.assign({}, cur, remote);
                   if(Array.isArray(cur.stampDone) && Array.isArray(remote.stampDone)){
                       merged.stampDone = Array.from(new Set(cur.stampDone.concat(remote.stampDone)));
+                  }
+                  if(cur.results && remote.results && typeof cur.results==='object' && typeof remote.results==='object'){
+                      merged.results = Object.assign({}, cur.results, remote.results);
                   }
                   s[teamKey()] = merged;
                   saveLS(s);
@@ -2552,7 +2649,7 @@ const OP_AVATARS = {
             ['alpha','beta','beacon','god','civil','light','watching','noLeak','blank','bossChijin','bossAidao','bossChaos','allHunt','xzAlpha','xzGodCivil','xzAutopsy'].forEach(function(id){
                 let el = document.getElementById(id); if(el) el.checked = false;
             });
-            ['submit','parts','usedMin','banteng','guofuLayer','fudeLayer','weakSubmit','eliteFight','collectN','huntLayer','stoneCount','overMoney'].forEach(function(id){
+            ['submit','parts','usedMin','banteng','guofuLayer','fudeLayer','weakSubmit','srcKeyN','eliteFight','collectN','huntLayer','stoneCount','overMoney'].forEach(function(id){
                 let el = document.getElementById(id); if(el) el.value = '';
             });
             document.getElementById('timeInfo').textContent = '基础60分 + 加时藏品×20分';
@@ -2621,7 +2718,7 @@ const OP_AVATARS = {
         <ul>
             <li>结算分加成：（结算分 − 7.5×零件）× <b>0.6</b></li>
             <li>窥视箱中（命运所指位置）<b>+150</b></li>
-            <li>结局：痛苦将息 通关 <b>+200</b>（无漏 +100）<br>混沌源阶理论 通关 <b>+250</b>（无漏 +50）<br>畸症 通关 <b>+150</b>（击杀玻利瓦尔 +90，无漏 +60）</li>
+            <li>结局：痛苦将息 通关 <b>+200</b>（无漏 +100）<br>混沌源阶理论 通关 <b>+250</b>（无漏 +50）<br>畸症 通关 <b>+150</b>（击杀玻利瓦尔 +90；无漏 +60，仅击杀时计入）</li>
             <li>特定藏品：击坠神明 / 焚毁文明 / 湮没光明 每个 <b>+150</b></li>
         </ul>
 
@@ -2639,7 +2736,7 @@ const OP_AVATARS = {
             <li><b>果腹</b>：主动获取计0分；系统强制塞入可用，扣 (7−获得时层数)×<b>180</b></li>
             <li><b>复得之轮</b>：主动获取计0分；系统强制塞入可用，扣 (7−获得时层数)×<b>90</b></li>
             <li><b>沙盘空白</b>：通关后无沙盘α也无沙盘β，扣 <b>−300</b></li>
-            <li><b>削弱藏提交</b>：六层命运所指提交击坠神明/焚毁文明/湮没光明/源私钥，每个 <b>−500</b></li>
+            <li><b>削弱藏提交</b>：六层命运所指提交击坠神明/焚毁文明/湮没光明/源私钥，每个 <b>−500</b>（队长提交源私钥不扣，请在队长专属区填写数量）</li>
             <li><b>超额取钱</b>：前瞻性投资总余额200，提取致余额减少超200部分，每超取1元团队积分 <b>−50</b></li>
         </ul>
 
@@ -2664,6 +2761,7 @@ const OP_AVATARS = {
             <li>先行者：四层前双沙盘 <b>+180</b>；五层前神明+文明 <b>+240</b>；五层前通关无效验尸 <b>+180</b></li>
             <li>谁才是猎物：每完成一层追猎 <b>+60</b>（安眠一隅不计；含第六层；黑诞追猎不计）</li>
             <li>特殊权限：复得之轮可主动选择（仍按强制标准扣分）；六层可提交源私钥削弱boss不扣分</li>
+            <li>队长身份：由本队首次按队长提交的选手自动锁定，之后不可改；误按队员提交会提示</li>
         </ul>
 
         <h4>通用</h4>
