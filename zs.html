@@ -2445,6 +2445,7 @@ const OP_AVATARS = {
                     personal: pTotal,
                     team: tTotal,
                     final: pTotal + tTotal,
+                    bank: take,
                     grabbed: (st.ops || []).slice(),
                     endings: items.filter(function(it){ return it.label.indexOf('结局·') === 0; })
                                   .map(function(it){ return it.label.replace('结局·',''); }),
