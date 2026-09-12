@@ -2529,11 +2529,13 @@ const OP_AVATARS = {
                                 .map(function(it){ return it.label.replace('急·',''); });
 
             // 先回滚该选手上一版贡献（重录/更正不会重复累加）
+            var keepNC = null;
             if (st.results && st.results[pname] && typeof st.results[pname] === 'object'){
                 let old = st.results[pname];
                 if (Array.isArray(old.stamps) && Array.isArray(st.stampDone)){
                     st.stampDone = st.stampDone.filter(function(n){ return old.stamps.indexOf(n) < 0; });
                 }
+                if (Array.isArray(old.ncGrabs) && old.ncGrabs.length) keepNC = old.ncGrabs.slice();
                 delete st.results[pname];
             }
             // 得分对齐（与专题页字段一致：个人得分 / 团队加分）
@@ -2554,6 +2556,7 @@ const OP_AVATARS = {
                 bossAidao: document.getElementById('bossAidao').checked,
                 bossChaos: document.getElementById('bossChaos').checked,
                 grabbed: (st.ops || []).slice(),
+                ncGrabs: keepNC || [],
                 endings: items.filter(function(it){ return it.label.indexOf('结局·') === 0; })
                               .map(function(it){ return it.label.replace('结局·',''); }),
                 finished: true
