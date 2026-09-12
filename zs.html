@@ -2478,8 +2478,27 @@ const OP_AVATARS = {
                   });
               })
               .then(function(r){ return r.json(); })
-              .then(function(d){ alert(d.ok ? '上传成功，本队状态已同步云端' : ('云端上传失败：' + (d.error||'未知'))); })
+              .then(function(d){
+                  if (d.ok){
+                      alert('上传成功，本队状态已同步云端。\n已自动复位，可直接录入下一位选手。');
+                      resetAfterUpload();
+                  } else {
+                      alert('云端上传失败：' + (d.error||'未知'));
+                  }
+              })
               .catch(function(e){ alert('云端上传失败：' + e); });
+            readTeamState();
+        }
+
+        // ===== 上传成功后自动复位，便于连录下一位选手 =====
+        function resetAfterUpload(){
+            try{
+                let s = loadLS();
+                let st = s[teamKey()];
+                if (st){ st.ops = []; saveLS(s); }
+            }catch(e){}
+            if (typeof renderOpArea === 'function') renderOpArea();
+            clearAll();          // 回到未结算状态并清空本次输入
             readTeamState();
         }
 
