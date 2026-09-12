@@ -1464,6 +1464,13 @@ function toggleRules(){ document.getElementById('rulesPanel').classList.toggle('
         BOSS_MAP.forEach(function(p){ if ((t.boss||[]).indexOf(p[0])>=0) st[p[1]]=true; });
         try{ st.personal = teamPersonalFull(teamObj); }catch(e){}
         try{ st.team = teamBonus(teamObj.team); }catch(e){}
+        st.players = [];
+        Object.keys(PLAYERS).forEach(function(nm){
+            const p = PLAYERS[nm];
+            if (p && p.team === teamObj.name){
+                st.players.push({name:nm, main:p.main||'', branch:p.branch||'', predicted:(p.predicted||[]).slice()});
+            }
+        });
         return st;
     }
     function baseName(f){
@@ -1472,12 +1479,17 @@ function toggleRules(){ document.getElementById('rulesPanel').classList.toggle('
         if (nm.slice(-4)==='.txt') nm = nm.slice(0,-4);
         return nm;
     }
-        function currentTeamFull(){
+        function currentData(){
             try{
                 var ov = JSON.parse(localStorage.getItem(OVERRIDE_KEY) || 'null');
                 if(ov && Array.isArray(ov.teamFull)) return ov;
             }catch(e){}
-            return { teamFull: JSON.parse(JSON.stringify(TEAM_FULL)) };
+            return {
+                players: JSON.parse(JSON.stringify(PLAYERS)),
+                preDays: JSON.parse(JSON.stringify(PRE_DAYS)),
+                finDays: JSON.parse(JSON.stringify(FIN_DAYS)),
+                teamFull: JSON.parse(JSON.stringify(TEAM_FULL))
+            };
         }
     window.cloudPull = function(silent){
         fetch(CLOUD + '/ztlist')
@@ -1493,7 +1505,7 @@ function toggleRules(){ document.getElementById('rulesPanel').classList.toggle('
                     .catch(function(){ return {nm:nm, o:null}; });
             });
             return Promise.all(pulls).then(function(list){
-                const base = currentTeamFull();
+                const base = currentData();
                 const tMap = {}; base.teamFull.forEach(function(t){ tMap[t.name]=t; });
                 let changed = false, pulled = 0;
                 list.forEach(function(it){
@@ -1502,6 +1514,17 @@ function toggleRules(){ document.getElementById('rulesPanel').classList.toggle('
                     const before = JSON.stringify(t.team);
                     teamStateToTeam(it.o, t);
                     if (before !== JSON.stringify(t.team)) changed = true;
+                    if (Array.isArray(it.o.players)){
+                        it.o.players.forEach(function(pl){
+                            const p = PLAYERS[pl.name];
+                            if (!p) return;
+                            const b2 = JSON.stringify([p.main, p.branch, p.predicted]);
+                            if (typeof pl.main === 'string') p.main = pl.main;
+                            if (typeof pl.branch === 'string') p.branch = pl.branch;
+                            if (Array.isArray(pl.predicted)) p.predicted = pl.predicted.slice();
+                            if (b2 !== JSON.stringify([p.main, p.branch, p.predicted])) changed = true;
+                        });
+                    }
                     pulled++;
                 });
                 if (pulled===0){ if(!silent) alert('云端暂无可合并的队伍动态数据'); return; }
@@ -1509,14 +1532,14 @@ function toggleRules(){ document.getElementById('rulesPanel').classList.toggle('
                 const totals = base.teamFull.map(function(x){ return {x:x, total:teamPersonalFull(x)+teamBonus(x.team)}; });
                 totals.sort(function(a,b){ return b.total-a.total; });
                 totals.forEach(function(x,idx){ x.x.rank=idx+1; });
-                localStorage.setItem(OVERRIDE_KEY, JSON.stringify(base));
+                localStorage.setItem(OVERRIDE_KEY, JSON.stringify({players: PLAYERS, preDays: base.preDays, finDays: base.finDays, teamFull: base.teamFull}));
                 location.reload();
             });
         })
         .catch(function(e){ if(!silent) alert('云端拉取失败：'+e); });
     };
     window.cloudUpload = function(){
-        const data = currentTeamFull();
+        const data = currentData();
         let done = 0;
         const ups = data.teamFull.map(function(t){
             const st = teamToTeamState(t);
