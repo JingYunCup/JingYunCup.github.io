@@ -2435,6 +2435,20 @@ const OP_AVATARS = {
             // 得分对齐（与专题页字段一致：个人得分 / 团队加分）
             st.personal = pTotal;
             st.team = tTotal;
+            // 本场选手结果（专题页据此显示 个人分 / 完赛 / 实际抓位）
+            var pname = (document.getElementById('player').value || '').trim();
+            if (pname){
+                if (!st.results || typeof st.results !== 'object') st.results = {};
+                st.results[pname] = {
+                    personal: pTotal,
+                    team: tTotal,
+                    final: pTotal + tTotal,
+                    grabbed: (st.ops || []).slice(),
+                    endings: items.filter(function(it){ return it.label.indexOf('结局·') === 0; })
+                                  .map(function(it){ return it.label.replace('结局·',''); }),
+                    finished: true
+                };
+            }
 
             saveLS(s);
             readTeamState();
@@ -2448,6 +2462,11 @@ const OP_AVATARS = {
                   var hasLocal = Array.isArray(payload.players) && payload.players.length > 0;
                   if (!hasLocal && rmt && Array.isArray(rmt.players) && rmt.players.length > 0){
                       payload.players = rmt.players;
+                      saveLS(s);
+                  }
+                  // 合并云端其他选手的 results，避免互相覆盖
+                  if (rmt && rmt.results && typeof rmt.results === 'object'){
+                      payload.results = Object.assign({}, rmt.results, payload.results || {});
                       saveLS(s);
                   }
                   return fetch(CLOUD + '/zt', {

@@ -867,7 +867,7 @@ function renderSchedDay(i){
     }
     const units = d.players.map((nm,idx)=>{
         const p = PLAYERS[nm];
-        const done = isPre ? !!d.done : false;
+        const done = !!d.done || !!(p && p.done);
         const times = daySessionTimes(d.players.length);
         const time = times[idx] || '';
         const stamp = done
@@ -1306,6 +1306,10 @@ function toggleRules(){ document.getElementById('rulesPanel').classList.toggle('
                     <span class="adm-lbl wide">回放录像URL</span><input class="adm-in wide" data-nm="${nm}" data-f="replay" value="${p.replay||''}" placeholder="https:// 或留空（仅已完赛场次显示）">
                 </div>
                 <div class="adm-row">
+                    <span class="adm-lbl">完赛状态</span>
+                    <label class="adm-chk"><input type="checkbox" data-nm="${nm}" data-f="done" ${p.done?'checked':''}>已完赛（显示实际抓位与得分明细）</label>
+                </div>
+                <div class="adm-row">
                     <span class="adm-lbl">得分明细</span>
                     <span style="font-size:12px;color:var(--text2)">提取余额</span><input class="adm-in sm" data-nm="${nm}" data-f="bank" value="${sc.bank||0}">
                     <span style="font-size:12px;color:var(--text2)">个人得分</span><input class="adm-in sm" data-nm="${nm}" data-f="personal" value="${sc.personal||0}">
@@ -1343,6 +1347,7 @@ function toggleRules(){ document.getElementById('rulesPanel').classList.toggle('
             // 干员抓位（predicted/grabbed）已由搜索下拉组件直接写入数据对象
             if (f==='endings'){ players[nm].endings = el.value.split(/[,，]+/).filter(Boolean); return; }
             if (['bank','personal','team','final'].includes(f)){ players[nm].score[f] = parseInt(el.value||0,10); return; }
+            if (f==='done'){ players[nm].done = !!el.checked; return; }
             players[nm][f] = el.value;
         });
         // ---- 赛程对阵 ----
@@ -1468,7 +1473,8 @@ function toggleRules(){ document.getElementById('rulesPanel').classList.toggle('
         Object.keys(PLAYERS).forEach(function(nm){
             const p = PLAYERS[nm];
             if (p && p.team === teamObj.name){
-                st.players.push({name:nm, main:p.main||'', branch:p.branch||'', predicted:(p.predicted||[]).slice()});
+                st.players.push({name:nm, main:p.main||'', branch:p.branch||'', predicted:(p.predicted||[]).slice(),
+                    grabbed:(p.grabbed||[]).slice(), done:!!p.done});
             }
         });
         return st;
@@ -1535,7 +1541,33 @@ function toggleRules(){ document.getElementById('rulesPanel').classList.toggle('
                             if (typeof pl.main === 'string') p.main = pl.main;
                             if (typeof pl.branch === 'string') p.branch = pl.branch;
                             if (Array.isArray(pl.predicted)) p.predicted = pl.predicted.slice();
-                            if (b2 !== JSON.stringify([p.main, p.branch, p.predicted])) changed = true;
+                            if (Array.isArray(pl.grabbed)) p.grabbed = pl.grabbed.slice();
+                            if (pl.done) p.done = true;
+                            if (b2 !== JSON.stringify([p.main, p.branch, p.predicted, p.grabbed, p.done])) changed = true;
+                        });
+                    }
+                    if (it.o.results && typeof it.o.results === 'object'){
+                        Object.keys(it.o.results).forEach(function(nm){
+                            const r = it.o.results[nm];
+                            if (!r || typeof r !== 'object') return;
+                            const p = playersNew[nm];
+                            if (p){
+                                if (!p.score || typeof p.score !== 'object') p.score = {bank:0, personal:0, team:0, final:0};
+                                const b3 = JSON.stringify([p.score, p.grabbed, p.endings, p.done]);
+                                if (typeof r.personal === 'number') p.score.personal = r.personal;
+                                if (typeof r.team === 'number') p.score.team = r.team;
+                                if (typeof r.final === 'number') p.score.final = r.final;
+                                if (typeof r.bank === 'number') p.score.bank = r.bank;
+                                if (Array.isArray(r.grabbed) && r.grabbed.length) p.grabbed = r.grabbed.slice();
+                                if (Array.isArray(r.endings)) p.endings = r.endings.slice();
+                                if (r.finished) p.done = true;
+                                if (b3 !== JSON.stringify([p.score, p.grabbed, p.endings, p.done])) changed = true;
+                            }
+                            (t.members||[]).forEach(function(m){
+                                if (m.name === nm && typeof r.personal === 'number' && m.pScore !== r.personal){
+                                    m.pScore = r.personal; changed = true;
+                                }
+                            });
                         });
                     }
                     pulled++;
