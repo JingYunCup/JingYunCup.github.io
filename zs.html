@@ -2212,19 +2212,38 @@ const OP_AVATARS = {
         function migrateLedger(st){
             if (!st || st.baseLedger) return st;
             let r = (st.results && typeof st.results==='object') ? st.results : {};
-            let sumTake = 0;
+            let legacy = false, sumTake = 0, sumStone = 0, sumHunt = 0;
+            let hasBossChijin = false, hasBossAidao = false, hasBossChaos = false;
             Object.keys(r).forEach(function(k){
                 let x = r[k]; if(!x || typeof x!=='object') return;
-                if (typeof x.take !== 'number' && typeof x.bank === 'number') x.take = x.bank;
-                if (typeof x.take === 'number') sumTake += x.take;
+                if (typeof x.take !== 'number' && typeof x.bank === 'number'){
+                    x.take = x.bank; legacy = true;              // 旧格式：只有 bank，没有本场快照
+                }
+                if (typeof x.take === 'number') sumTake += x.take; else if (x.bank || x.personal) legacy = true;
+                if (typeof x.stone === 'number') sumStone += x.stone; else if (x.take !== undefined) legacy = true;
+                if (x.allHunt) sumHunt += 1; else if (x.allHunt === undefined && x.take !== undefined) legacy = true;
+                if (x.bossChijin) hasBossChijin = true;
+                if (x.bossAidao) hasBossAidao = true;
+                if (x.bossChaos) hasBossChaos = true;
             });
-            st.baseLedger = {
-                stamps: Array.isArray(st.stampDone) ? st.stampDone.slice() : [],
-                stoneSum: st.stoneSum||0,
-                allHuntCount: st.allHuntCount||0,
-                moneyUsed: Math.max(0, (st.moneyUsed||0) - sumTake),
-                bossChijin: !!st.bossChijin, bossAidao: !!st.bossAidao, bossChaos: !!st.bossChaos
-            };
+            let extraStone = Math.max(0, (st.stoneSum||0) - sumStone);
+            let extraHunt  = Math.max(0, (st.allHuntCount||0) - Math.min(sumHunt,2));
+            let extraMoney = Math.max(0, (st.moneyUsed||0) - sumTake);
+            if (extraStone > 0 || extraHunt > 0 || extraMoney > 0) legacy = true;
+            if (legacy){
+                st.baseLedger = {
+                    stamps: Array.isArray(st.stampDone) ? st.stampDone.slice() : [],
+                    stoneSum: extraStone,
+                    allHuntCount: extraHunt,
+                    moneyUsed: extraMoney,
+                    bossChijin: !!(st.bossChijin && !hasBossChijin),
+                    bossAidao: !!(st.bossAidao && !hasBossAidao),
+                    bossChaos: !!(st.bossChaos && !hasBossChaos)
+                };
+            } else {
+                st.baseLedger = { stamps: [], stoneSum: 0, allHuntCount: 0, moneyUsed: 0,
+                                  bossChijin: false, bossAidao: false, bossChaos: false };
+            }
             return st;
         }
         function ledgerOf(st){
