@@ -1491,8 +1491,20 @@ function toggleRules(){ document.getElementById('rulesPanel').classList.toggle('
                 teamFull: JSON.parse(JSON.stringify(TEAM_FULL))
             };
         }
-    window.cloudPull = function(silent){
-        fetch(CLOUD + '/ztlist')
+    var SYNC_KEY = 'jyb_zt_synced_v1';
+    function isDirty(){
+        try{
+            var cur = localStorage.getItem(OVERRIDE_KEY);
+            if (cur === null) return false;               // 尚无本地数据，可直接同步
+            return cur !== (localStorage.getItem(SYNC_KEY) || '');
+        }catch(e){ return false; }
+    }
+    function markSynced(){
+        try{ localStorage.setItem(SYNC_KEY, localStorage.getItem(OVERRIDE_KEY) || ''); }catch(e){}
+    }
+    // 拉云端数据并在「副本」上合并，返回结果供调用方决定是否落盘
+    function fetchAndMerge(){
+        return fetch(CLOUD + '/ztlist')
         .then(function(r){ return r.json(); })
         .then(function(d){
             if (!d.ok) throw new Error(d.error||'ztlist 失败');
@@ -1506,6 +1518,7 @@ function toggleRules(){ document.getElementById('rulesPanel').classList.toggle('
             });
             return Promise.all(pulls).then(function(list){
                 const base = currentData();
+                const playersNew = JSON.parse(JSON.stringify(PLAYERS));
                 const tMap = {}; base.teamFull.forEach(function(t){ tMap[t.name]=t; });
                 let changed = false, pulled = 0;
                 list.forEach(function(it){
@@ -1516,7 +1529,7 @@ function toggleRules(){ document.getElementById('rulesPanel').classList.toggle('
                     if (before !== JSON.stringify(t.team)) changed = true;
                     if (Array.isArray(it.o.players)){
                         it.o.players.forEach(function(pl){
-                            const p = PLAYERS[pl.name];
+                            const p = playersNew[pl.name];
                             if (!p) return;
                             const b2 = JSON.stringify([p.main, p.branch, p.predicted]);
                             if (typeof pl.main === 'string') p.main = pl.main;
@@ -1527,14 +1540,24 @@ function toggleRules(){ document.getElementById('rulesPanel').classList.toggle('
                     }
                     pulled++;
                 });
-                if (pulled===0){ if(!silent) alert('云端暂无可合并的队伍动态数据'); return; }
-                if (!changed){ if(!silent) alert('云端数据已是最新'); return; }
                 const totals = base.teamFull.map(function(x){ return {x:x, total:teamPersonalFull(x)+teamBonus(x.team)}; });
                 totals.sort(function(a,b){ return b.total-a.total; });
                 totals.forEach(function(x,idx){ x.x.rank=idx+1; });
-                localStorage.setItem(OVERRIDE_KEY, JSON.stringify({players: PLAYERS, preDays: base.preDays, finDays: base.finDays, teamFull: base.teamFull}));
-                location.reload();
+                return {pulled:pulled, changed:changed, base:base, players:playersNew};
             });
+        });
+    }
+    function applyMerge(res){
+        localStorage.setItem(OVERRIDE_KEY, JSON.stringify({players: res.players, preDays: res.base.preDays, finDays: res.base.finDays, teamFull: res.base.teamFull}));
+        markSynced();
+    }
+    window.cloudPull = function(silent){
+        fetchAndMerge()
+        .then(function(res){
+            if (res.pulled===0){ if(!silent) alert('云端暂无可合并的队伍动态数据'); return; }
+            if (!res.changed){ if(!silent) alert('云端数据已是最新'); return; }
+            applyMerge(res);
+            location.reload();
         })
         .catch(function(e){ if(!silent) alert('云端拉取失败：'+e); });
     };
@@ -1544,13 +1567,44 @@ function toggleRules(){ document.getElementById('rulesPanel').classList.toggle('
         const ups = data.teamFull.map(function(t){
             const st = teamToTeamState(t);
             return fetch(CLOUD + '/zt', {method:'POST', headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({ team: t.name, content: JSON.stringify(st) })})
+                body: JSON.stringify({ team: t.name, content: JSON.stringify(st)})})
                 .then(function(r){ return r.json(); })
                 .then(function(d){ if (d.ok) done++; return d; })
                 .catch(function(e){ console.error(t.name, e); return {ok:false}; });
         });
-        Promise.all(ups).then(function(){ alert('已上传 ' + done + '/' + data.teamFull.length + ' 队到云端'); });
+        Promise.all(ups).then(function(){
+            markSynced();
+            if (syncBar){ syncBar.remove(); syncBar = null; }
+            alert('已上传 ' + done + '/' + data.teamFull.length + ' 队到云端');
+        });
     };
+
+    // ===== 自动检测云端更新 =====
+    function admOpen(){ var m = document.getElementById('admMask'); return !!(m && !m.hidden); }
+    var syncBar = null;
+    function showSyncBar(n){
+        if (syncBar) return;
+        syncBar = document.createElement('div');
+        syncBar.id = 'jybSyncBar';
+        syncBar.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:99999;'
+            + 'background:#101418;color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:999px;'
+            + 'padding:11px 20px;font-size:14px;cursor:pointer;box-shadow:0 8px 28px rgba(0,0,0,.5)';
+        syncBar.textContent = '云端有更新（' + n + ' 队）· 点击同步';
+        syncBar.addEventListener('click', function(){ syncBar.remove(); syncBar = null; cloudPull(false); });
+        document.body.appendChild(syncBar);
+    }
+    function autoCheck(){
+        if (admOpen() || syncBar) return;
+        fetchAndMerge().then(function(res){
+            if (!res.changed) return;
+            if (!isDirty()){ applyMerge(res); location.reload(); return; }
+            showSyncBar(res.pulled);
+        }).catch(function(){});
+    }
+    window.autoCheck = autoCheck;
+    setInterval(autoCheck, 60000);
+    document.addEventListener('visibilitychange', function(){ if (!document.hidden) setTimeout(autoCheck, 400); });
+
     var pullBtn = document.getElementById('admPull');
     var upBtn = document.getElementById('admUpload');
     if (pullBtn) pullBtn.addEventListener('click', function(){ cloudPull(false); });

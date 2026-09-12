@@ -2077,6 +2077,7 @@ const OP_AVATARS = {
 
         // ===== 全局状态 =====
         let isConfirmed = 1;
+        let settleCount = 0;       // 最近一次结算新增的条目数（撤销结算用）
         let identity = 'member';
         let mode = 'train';
         let items = [];            // {label, score, type}  type: 'p'个人 / 't'团队
@@ -2147,6 +2148,14 @@ const OP_AVATARS = {
         }
         function deleteLastItem(){
             if(items.length===0) return;
+            // 已结算：撤销本次结算新增的全部条目，并解除结算状态，可重新计算后再结算
+            if(isConfirmed !== 1 && settleCount > 0){
+                items.splice(Math.max(0, items.length - settleCount), settleCount);
+                settleCount = 0;
+                isConfirmed = 1;
+                renderCounter();
+                return;
+            }
             items.pop();
             renderCounter();
         }
@@ -2306,6 +2315,7 @@ const OP_AVATARS = {
         }
         function confirmScore(){
             if(isConfirmed !== 1){ alert('请勿重复结算'); return; }
+            let __before = items.length;
 
             // ===== 个人积分 =====
             let submit = parseInt(document.getElementById('submit').value) || 0;
@@ -2370,6 +2380,7 @@ const OP_AVATARS = {
                 else insertCounter('取钱'+take+'（未超额）', 0, 't');
             }
 
+            settleCount = items.length - __before;
             isConfirmed++;
         }
 
@@ -2476,6 +2487,7 @@ const OP_AVATARS = {
 
         function clearAll(){
             isConfirmed = 1;
+            settleCount = 0;
             items = [];
             pTotal = 0; tTotal = 0;
             document.getElementById('counter').value = '';
