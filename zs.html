@@ -2592,13 +2592,24 @@ const OP_AVATARS = {
                       body: JSON.stringify({ team: teamKey(), content: JSON.stringify(payload) })
                   });
               })
-              .then(function(r){ return r.json(); })
+              .then(function(r){
+                  var _st = r.status;
+                  return r.text().then(function(t){
+                      var j = null; try{ j = JSON.parse(t); }catch(e){}
+                      if (j && typeof j === 'object'){ j.__http = _st; return j; }
+                      return { ok:false, error:('HTTP '+_st+' '+String(t).slice(0,80)), __http:_st };
+                  });
+              })
               .then(function(d){
                   if (d.ok){
                       alert('上传成功，本队状态已同步云端。\n已自动复位，可直接录入下一位选手。');
                       resetAfterUpload();
                   } else {
-                      alert('云端上传失败：' + (d.error||'未知'));
+                      var _m = d.error || '未知' ;
+                      if (d.__http === 410 || /InsufficientBalance|arrears|recharge/i.test(String(_m)))
+                          _m = '云端服务已停用（腾讯云账号欠费，请充值后重试）。\n本次成绩已保存在本机，充值后重新点击上传即可。';
+                      else if (d.__http && d.__http >= 400) _m = 'HTTP ' + d.__http + ' · ' + _m;
+                      alert('云端上传失败：' + _m);
                   }
               })
               .catch(function(e){ alert('云端上传失败：' + e); })
@@ -2696,6 +2707,8 @@ const OP_AVATARS = {
             txt += '个人得分：' + pTotal + '\n';
             txt += '团队加分：' + tTotal + '\n';
             txt += '总积分：' + (pTotal+tTotal) + '\n';
+            let _ops = (getOpState().ops || []).slice();
+            txt += '抓取干员共' + _ops.length + '名' + (_ops.length ? '，分别是' + _ops.join('、') : '（未抓取）') + '\n';
             txt += '计分明细：\n' + document.getElementById('counter').value + '\n';
             txt += '导出时间：' + now.getFullYear() + p2(now.getMonth()+1) + p2(now.getDate()) + '-' + p2(now.getHours()) + p2(now.getMinutes()) + '\n';
             let blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
