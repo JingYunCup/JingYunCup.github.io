@@ -617,6 +617,36 @@
             border-color: #d32f2f;
             color: #d32f2f;
         }
+        .hunt-chip.mine-owner {
+            background-color: #e8f5e9;
+            border-color: #2e7d32;
+            color: #1b5e20;
+            font-weight: 600;
+        }
+        .hunt-chip.mate-owner {
+            background-color: #f5f5f5;
+            border-color: #bbbbbb;
+            color: #757575;
+        }
+        .submit-detail {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin-top: 6px;
+            background: #fafafa;
+            font-size: 13px;
+            line-height: 1.75;
+        }
+        .submit-detail .sd-title { font-weight: 700; color: #333; margin-bottom: 4px; }
+        .submit-detail .sd-row { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+        .submit-detail .sd-k { color: #888; }
+        .submit-detail .sd-v { color: #222; font-weight: 600; }
+        .submit-detail .sd-empty { color: #999; }
+        .submit-detail .sd-chip {
+            background-color: #e8f5e9; border: 1px solid #2e7d32;
+            border-radius: 4px; padding: 1px 6px; color: #1b5e20; font-size: 12px;
+            cursor: pointer;
+        }
 
         /* ===== 抓取干员：可搜索下拉 ===== */
         .op-combo-wrap {
@@ -931,7 +961,7 @@
             </select>
 
             <div class="label">选手姓名</div>
-            <select id="player" class="select"></select>
+            <select id="player" class="select" onchange="onPlayerChange()"></select>
 
             <div class="label">身份</div>
             <div class="checkbox-container">
@@ -1092,6 +1122,8 @@
             </div>
             <div class="label" id="moneyLeft" style="color:#2196F3;">队伍可取余额：200</div>
             <div class="label" id="huntInfo" style="font-size:13px;color:#888;"></div>
+            <div class="label" style="margin-top:8px;">选手提交明细（切换上方选手查看；绿色紧急可点击移除）</div>
+            <div class="submit-detail" id="submitDetail">—</div>
 
             <div class="divider"></div>
 
@@ -2298,9 +2330,11 @@ const OP_AVATARS = {
                 sel.appendChild(o);
             });
             // 已完成的关卡放最下面，禁用红色
+            let owners = stampOwners(getTeamState()[teamKey()]);
             done.forEach(function(name){
+                let who = owners[name] || [];
                 let o = document.createElement('option');
-                o.value = name; o.textContent = name + ' (+30) [已打过]';
+                o.value = name; o.textContent = name + ' (+30) [已打过' + (who.length ? '·' + who.join('、') : '') + ']';
                 o.disabled = true;
                 o.style.color = '#d32f2f';
                 o.style.background = '#ffebee';
@@ -2328,6 +2362,8 @@ const OP_AVATARS = {
             let mine = items.filter(it => it.label.indexOf('急·')===0);
             let st = mode==='match' ? getTeamState()[teamKey()] : null;
             let done = st ? ledgerOf(st).stamps : [];
+            let owners = st ? stampOwners(st) : {};
+            let curP = (document.getElementById('player') && document.getElementById('player').value || '').trim();
             if(mine.length===0 && done.length===0){ area.innerHTML = '尚未添加'; return; }
             let html = '';
             mine.forEach(function(it){
@@ -2335,9 +2371,75 @@ const OP_AVATARS = {
                 html += '<span class="hunt-chip" onclick="removeStamp(\'' + n + '\')" style="cursor:pointer;">' + n + ' ×</span>';
             });
             done.forEach(function(n){
-                html += '<span class="hunt-chip done">' + n + '（已打过）</span>';
+                let who = owners[n] || [];
+                if(curP && who.indexOf(curP) > -1){
+                    html += '<span class="hunt-chip mine-owner">' + n + '（' + curP + '）</span>';
+                } else {
+                    html += '<span class="hunt-chip mate-owner done">' + n + '（' + (who.length ? who.join('、') : '已打过') + '）</span>';
+                }
             });
             area.innerHTML = html;
+        }
+        // 紧急关卡 -> 完成者列表（从各选手提交明细派生）
+        function stampOwners(st){
+            let map = {};
+            let r = (st && st.results && typeof st.results==='object') ? st.results : {};
+            Object.keys(r).forEach(function(pn){
+                let x = r[pn];
+                if(!x || !Array.isArray(x.stamps)) return;
+                x.stamps.forEach(function(n){ (map[n] = map[n] || []).push(pn); });
+            });
+            return map;
+        }
+        // 本队提交明细面板：显示当前选中选手已提交的明细
+        function renderSubmitDetail(){
+            let box = document.getElementById('submitDetail');
+            if(!box) return;
+            if(mode !== 'match'){ box.innerHTML = '—'; return; }
+            let st = getTeamState()[teamKey()];
+            let pn = (document.getElementById('player') && document.getElementById('player').value || '').trim();
+            if(!pn){ box.innerHTML = '<span class="sd-empty">未选择选手</span>'; return; }
+            let r = (st.results && st.results[pn] && typeof st.results[pn]==='object') ? st.results[pn] : null;
+            if(!r){ box.innerHTML = '<span class="sd-empty">「' + pn + '」暂无提交记录</span>'; return; }
+            let sts = Array.isArray(r.stamps) ? r.stamps : [];
+            let bosses = [];
+            if(r.bossChijin) bosses.push('赤金厄运');
+            if(r.bossAidao) bosses.push('哀悼铁腕');
+            if(r.bossChaos) bosses.push('混沌源阶理论');
+            let grabs = Array.isArray(r.grabbed) ? r.grabbed : [];
+            let ends = Array.isArray(r.endings) ? r.endings : [];
+            let html = '';
+            html += '<div class="sd-title">' + pn + ' · 已提交明细</div>';
+            html += '<div class="sd-row"><span class="sd-k">个人分</span><span class="sd-v">' + (r.personal||0) + '</span><span class="sd-k">团队加分</span><span class="sd-v">+' + (r.team||0) + '</span><span class="sd-k">最终</span><span class="sd-v">' + (r.final||0) + '</span></div>';
+            html += '<div class="sd-row"><span class="sd-k">提取余额</span><span class="sd-v">' + (r.bank||0) + '</span><span class="sd-k">取钱</span><span class="sd-v">' + (r.take||0) + '</span><span class="sd-k">实托邦</span><span class="sd-v">' + (r.stone||0) + '</span><span class="sd-k">全程追猎</span><span class="sd-v">' + (r.allHunt?'是':'否') + '</span></div>';
+            html += '<div class="sd-row"><span class="sd-k">Boss首通</span><span class="sd-v">' + (bosses.length?bosses.join('、'):'无') + '</span></div>';
+            html += '<div class="sd-row"><span class="sd-k">紧急悬赏</span>' + (sts.length ? sts.map(function(n){ return '<span class="sd-chip" onclick="removePlayerStamp(\'' + n + '\')" title="点击从该选手提交中移除">' + n + ' ×</span>'; }).join('') : '<span class="sd-empty">无</span>') + '</div>';
+            html += '<div class="sd-row"><span class="sd-k">实际抓位</span><span class="sd-v">' + (grabs.length?grabs.join('、'):'无') + '</span></div>';
+            html += '<div class="sd-row"><span class="sd-k">完成结局</span><span class="sd-v">' + (ends.length?ends.join('、'):'无') + '</span></div>';
+            box.innerHTML = html;
+        }
+        function onPlayerChange(){
+            renderStampArea();
+            renderSubmitDetail();
+        }
+        // 从某选手的已提交明细中移除一条紧急（审核修正，需重新上传同步）
+        function removePlayerStamp(name){
+            let bag = getTeamState();
+            let st = bag[teamKey()];
+            let pn = (document.getElementById('player') && document.getElementById('player').value || '').trim();
+            if(!pn || !st.results || !st.results[pn]) return;
+            let r = st.results[pn];
+            if(!Array.isArray(r.stamps)) return;
+            let i = r.stamps.indexOf(name);
+            if(i < 0) return;
+            if(!confirm('从「' + pn + '」的提交中移除紧急「' + name + '」（该选手团队加分 -30）？\n移除后请重新核对分数，并点击“上传结果”同步云端。')) return;
+            r.stamps.splice(i, 1);
+            if(typeof r.team === 'number') r.team = Math.max(0, r.team - 30);
+            if(typeof r.personal === 'number') r.final = r.personal + (r.team||0);
+            syncLedger(st);
+            saveLS(bag);
+            renderStampArea();
+            renderSubmitDetail();
         }
 
         // ===== 清空所有团队积分设置 =====
@@ -2499,6 +2601,7 @@ const OP_AVATARS = {
             document.getElementById('huntInfo').textContent = '全程追猎已' + led.allHuntCount + '/2人次' + '　队长：' + (captainOf(st) || '未登记');
             if(led.allHuntCount >= 2) document.getElementById('allHunt').disabled = true;
             else document.getElementById('allHunt').disabled = false;
+            renderSubmitDetail();
         }
 
         // ===== 上传结果 =====
