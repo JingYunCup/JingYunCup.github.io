@@ -1882,19 +1882,18 @@ const OP_AVATARS = {
             let el = document.getElementById('player');
             return (el && el.value || '').trim();
         }
-        // 迁移：把历史提交还原成各选手自己的抓位（每队只做一次）
+        // 迁移：把历史提交还原成各选手自己的抓位（幂等：只补没有记录的选手，已有记录一律不动）
         function normalizePlayerOps(st){
-            if(!st.playerOps || typeof st.playerOps !== 'object'){
-                st.playerOps = {};
-                let res = (st.results && typeof st.results === 'object') ? st.results : {};
-                Object.keys(res).forEach(function(pn){
-                    let r = res[pn]; if(!r || typeof r !== 'object') return;
-                    let g = Array.isArray(r.grabbed) ? r.grabbed.slice() : [];
-                    let n = Array.isArray(r.ncGrabs) ? r.ncGrabs.slice() : [];
-                    n.forEach(function(x){ if(g.indexOf(x) < 0) g.push(x); });
-                    if(g.length) st.playerOps[pn] = g;
-                });
-            }
+            if(!st.playerOps || typeof st.playerOps !== 'object') st.playerOps = {};
+            let res = (st.results && typeof st.results === 'object') ? st.results : {};
+            Object.keys(res).forEach(function(pn){
+                if(Object.prototype.hasOwnProperty.call(st.playerOps, pn)) return;
+                let r = res[pn]; if(!r || typeof r !== 'object') return;
+                let g = Array.isArray(r.grabbed) ? r.grabbed.slice() : [];
+                let n = Array.isArray(r.ncGrabs) ? r.ncGrabs.slice() : [];
+                n.forEach(function(x){ if(g.indexOf(x) < 0) g.push(x); });
+                if(g.length) st.playerOps[pn] = g;
+            });
             return st;
         }
         // 当前上下文对应的抓位数组：比赛=当前选手自己的抓位，训练=内存记录
