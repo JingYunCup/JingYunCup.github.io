@@ -1069,7 +1069,7 @@
                 </div>
                 <button class="button op-add-btn" onclick="addOpUse()">添加</button>
             </div>
-            <div class="label">本队抓取干员（点击头像移除）</div>
+            <div class="label" id="opAreaLabel">本次抓取干员（点击头像移除）</div>
             <div class="op-avatar-area" id="opArea">尚未添加</div>
             <button class="button op-export-btn" onclick="exportAllAvatars()">导出所有干员头像</button>
 
@@ -1877,6 +1877,41 @@ const OP_AVATARS = {
             if(!st.ops) st.ops = [];
             return st;
         }
+        // 当前选中的选手名
+        function curPlayerName(){
+            let el = document.getElementById('player');
+            return (el && el.value || '').trim();
+        }
+        // 迁移：把历史提交还原成各选手自己的抓位（每队只做一次）
+        function normalizePlayerOps(st){
+            if(!st.playerOps || typeof st.playerOps !== 'object'){
+                st.playerOps = {};
+                let res = (st.results && typeof st.results === 'object') ? st.results : {};
+                Object.keys(res).forEach(function(pn){
+                    let r = res[pn]; if(!r || typeof r !== 'object') return;
+                    let g = Array.isArray(r.grabbed) ? r.grabbed.slice() : [];
+                    let n = Array.isArray(r.ncGrabs) ? r.ncGrabs.slice() : [];
+                    n.forEach(function(x){ if(g.indexOf(x) < 0) g.push(x); });
+                    if(g.length) st.playerOps[pn] = g;
+                });
+            }
+            return st;
+        }
+        // 当前上下文对应的抓位数组：比赛=当前选手自己的抓位，训练=内存记录
+        function opArr(){
+            if(mode !== 'match'){
+                if(!trainOps.ops) trainOps.ops = [];
+                return trainOps.ops;
+            }
+            let s = getTeamState();
+            opStateRef = s;
+            let st = s[teamKey()];
+            normalizePlayerOps(st);
+            let pn = curPlayerName();
+            if(!pn) return [];
+            if(!st.playerOps[pn]) st.playerOps[pn] = [];
+            return st.playerOps[pn];
+        }
         function saveOpState(){
             if(mode === 'match' && opStateRef){ saveLS(opStateRef); }
         }
@@ -1949,9 +1984,10 @@ const OP_AVATARS = {
             if(isConfirmed !== 1){ alert('请勿在结算后添加干员'); return; }
             if(!name){ alert('请输入干员名'); return; }
             if(!(name in OP_RAR)){ alert('未找到该干员：' + name); return; }
-            let st = getOpState();
-            if(st.ops.indexOf(name) > -1){ alert('该干员已添加'); return; }
-            st.ops.push(name);
+            if(mode === 'match' && !curPlayerName()){ alert('请先选择选手'); return; }
+            let arr = opArr();
+            if(arr.indexOf(name) > -1){ alert('该干员已添加'); return; }
+            arr.push(name);
             saveOpState();
             document.getElementById('opSearch').value = '';
             document.getElementById('opClear').style.display = 'none';
@@ -1962,9 +1998,9 @@ const OP_AVATARS = {
             addOpUseByName(document.getElementById('opSearch').value.trim());
         }
         function removeOpUse(name){
-            let st = getOpState();
-            let idx = st.ops.indexOf(name);
-            if(idx > -1) st.ops.splice(idx, 1);
+            let arr = opArr();
+            let idx = arr.indexOf(name);
+            if(idx > -1) arr.splice(idx, 1);
             saveOpState();
             renderOpArea();
         }
@@ -1995,9 +2031,12 @@ const OP_AVATARS = {
             if(typeof renderOpList === 'function') renderOpList(document.getElementById('opSearch').value);
         }
         function renderOpArea(){
-            let st = getOpState();
             let area = document.getElementById('opArea');
-            let names = (st.ops||[]).slice().sort(function(a,b){ return a.localeCompare(b,'zh'); });
+            let names = (opArr()||[]).slice().sort(function(a,b){ return a.localeCompare(b,'zh'); });
+            let lb = document.getElementById('opAreaLabel');
+            if(lb) lb.textContent = (mode === 'match')
+                ? ('当前选手抓取干员' + (curPlayerName() ? '（' + curPlayerName() + '，点击头像移除）' : '（请先选择选手）'))
+                : '本次抓取干员（点击头像移除）';
             if(names.length === 0){ area.innerHTML = '尚未添加'; return; }
             let html = '';
             names.forEach(function(n){
@@ -2419,6 +2458,7 @@ const OP_AVATARS = {
             box.innerHTML = html;
         }
         function onPlayerChange(){
+            renderOpArea();
             renderStampArea();
             renderSubmitDetail();
         }
@@ -2453,7 +2493,8 @@ const OP_AVATARS = {
             let k = teamKey();
             if(mode === 'match'){
                 let st = s[k] || {};
-                st.ops = [];            // 仅清本场次干员，台账由 results 派生恢复
+                normalizePlayerOps(st);
+                if(curPlayerName()) st.playerOps[curPlayerName()] = [];   // 仅清当前选手本场次抓位（results 台账保留）
                 syncLedger(st);
                 saveLS(s);
             } else {
@@ -2644,6 +2685,11 @@ const OP_AVATARS = {
             // 得分对齐（与专题页字段一致：个人得分 / 团队加分）
             st.personal = pTotal;
             st.team = tTotal;
+            // 是否通关（有完成结局）：未通关的抓位归入 ncGrabs，专题页灰色显示、不计入抓取
+            var runEndings = items.filter(function(it){ return it.label.indexOf('结局·') === 0; })
+                                  .map(function(it){ return it.label.replace('结局·',''); });
+            var runCleared = runEndings.length > 0;
+            var myOps = (opArr() || []).slice();
             // 本场选手结果（专题页据此显示 个人分 / 完赛 / 实际抓位）
             if (!st.results || typeof st.results !== 'object') st.results = {};
             st.results[pname] = {
@@ -2658,10 +2704,9 @@ const OP_AVATARS = {
                 bossChijin: document.getElementById('bossChijin').checked,
                 bossAidao: document.getElementById('bossAidao').checked,
                 bossChaos: document.getElementById('bossChaos').checked,
-                grabbed: (st.ops || []).slice(),
-                ncGrabs: keepNC || [],
-                endings: items.filter(function(it){ return it.label.indexOf('结局·') === 0; })
-                              .map(function(it){ return it.label.replace('结局·',''); }),
+                grabbed: runCleared ? myOps : [],
+                ncGrabs: runCleared ? (keepNC || []) : myOps,
+                endings: runEndings,
                 finished: true
             };
             // 队长登记
@@ -2725,7 +2770,12 @@ const OP_AVATARS = {
             try{
                 let s = loadLS();
                 let st = s[teamKey()];
-                if (st){ st.ops = []; saveLS(s); }
+                if (st){
+                    normalizePlayerOps(st);
+                    let pn = curPlayerName();
+                    if (pn) st.playerOps[pn] = [];
+                    saveLS(s);
+                }
             }catch(e){}
             if (typeof renderOpArea === 'function') renderOpArea();
             clearAll();          // 回到未结算状态并清空本次输入
@@ -2748,6 +2798,9 @@ const OP_AVATARS = {
                   }
                   if(cur.results && remote.results && typeof cur.results==='object' && typeof remote.results==='object'){
                       merged.results = Object.assign({}, cur.results, remote.results);
+                  }
+                  if(cur.playerOps && remote.playerOps && typeof cur.playerOps==='object' && typeof remote.playerOps==='object'){
+                      merged.playerOps = Object.assign({}, cur.playerOps, remote.playerOps);
                   }
                   s[teamKey()] = merged;
                   saveLS(s);
