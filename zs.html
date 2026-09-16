@@ -2669,7 +2669,7 @@ const OP_AVATARS = {
             let sc = parseInt(document.getElementById('stoneCount').value) || 0;
             let useAllHunt = document.getElementById('allHunt').checked;
             let newStamps = items.filter(function(it){ return it.label.indexOf('急·')===0; })
-                                .map(function(it){ return it.label.replace('急·',''); });
+                                .map(function(it){ return it.label.replace('急·',''); });  // 存规范名，无「急·」前缀
 
             // 先回滚该选手上一版贡献（重录/更正不会重复累加）
             var keepNC = null;
@@ -2684,10 +2684,11 @@ const OP_AVATARS = {
             // 得分对齐（与专题页字段一致：个人得分 / 团队加分）
             st.personal = pTotal;
             st.team = tTotal;
-            // 是否通关（有完成结局）：未通关的抓位归入 ncGrabs，专题页灰色显示、不计入抓取
+            // 是否通关：必须通过三结局「畸症」；只有一/二结局（如混沌源阶理论）不算通关，
+            // 未通关的抓位归入 ncGrabs，专题页灰色显示、不计入抓取
             var runEndings = items.filter(function(it){ return it.label.indexOf('结局·') === 0; })
                                   .map(function(it){ return it.label.replace('结局·',''); });
-            var runCleared = runEndings.length > 0;
+            var runCleared = runEndings.some(function(e){ return e.indexOf('畸症') > -1; });
             var myOps = (opArr() || []).slice();
             // 本场选手结果（专题页据此显示 个人分 / 完赛 / 实际抓位）
             if (!st.results || typeof st.results !== 'object') st.results = {};
