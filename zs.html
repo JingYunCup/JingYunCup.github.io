@@ -2450,6 +2450,18 @@ const OP_AVATARS = {
             html += '<div class="sd-title">' + pn + ' · 已提交明细</div>';
             html += '<div class="sd-row"><span class="sd-k">个人分</span><span class="sd-v">' + (r.personal||0) + '</span><span class="sd-k">团队加分</span><span class="sd-v">+' + (r.team||0) + '</span><span class="sd-k">最终</span><span class="sd-v">' + (r.final||0) + '</span></div>';
             html += '<div class="sd-row"><span class="sd-k">提取余额</span><span class="sd-v">' + (r.bank||0) + '</span><span class="sd-k">取钱</span><span class="sd-v">' + (r.take||0) + '</span><span class="sd-k">实托邦</span><span class="sd-v">' + (r.stone||0) + '</span><span class="sd-k">全程追猎</span><span class="sd-v">' + (r.allHunt?'是':'否') + '</span></div>';
+            var cap = (r.captain && typeof r.captain === 'object') ? r.captain : null;
+            var capOn = !!(cap && cap.mode);
+            html += '<div class="sd-row"><span class="sd-k">队长模式</span><span class="sd-v">' + (capOn ? '已开启' : (cap ? '未开启' : '未记录（旧版提交）')) + '</span></div>';
+            if(capOn){
+                html += '<div class="sd-row"><span class="sd-k">精英战斗场次</span><span class="sd-v">' + (cap.elite||0) + '</span><span class="sd-k">藏品数量</span><span class="sd-v">' + (cap.collect||0) + '</span></div>';
+                html += '<div class="sd-row"><span class="sd-k">追猎层数</span><span class="sd-v">' + (cap.hunt||0) + '</span><span class="sd-k">其中源私钥</span><span class="sd-v">' + (cap.srcKey||0) + '</span></div>';
+                var xz = [];
+                if(cap.xzAlpha) xz.push('四层前双沙盘');
+                if(cap.xzGodCivil) xz.push('五层前神明+文明');
+                if(cap.xzAutopsy) xz.push('五层前无效验尸');
+                html += '<div class="sd-row"><span class="sd-k">先行者</span><span class="sd-v">' + (xz.length?xz.join('、'):'无') + '</span></div>';
+            }
             html += '<div class="sd-row"><span class="sd-k">Boss首通</span><span class="sd-v">' + (bosses.length?bosses.join('、'):'无') + '</span></div>';
             html += '<div class="sd-row"><span class="sd-k">紧急悬赏</span>' + (sts.length ? sts.map(function(n){ return '<span class="sd-chip" onclick="removePlayerStamp(\'' + n + '\')" title="点击从该选手提交中移除">' + n + ' ×</span>'; }).join('') : '<span class="sd-empty">无</span>') + '</div>';
             html += '<div class="sd-row"><span class="sd-k">实际抓位</span><span class="sd-v">' + (grabs.length?grabs.join('、'):'无') + '</span></div>';
@@ -2583,14 +2595,14 @@ const OP_AVATARS = {
             // 队长专属（个人）
             if(identity === 'captain'){
                 let ef = parseInt(document.getElementById('eliteFight').value) || 0;
-                if(ef > 0) insertCounter('披荆斩棘', ef*30, 'p');
+                if(ef > 0) insertCounter('披荆斩棘（精英 ' + ef + ' 场）', ef*30, 'p');
                 let cn = parseInt(document.getElementById('collectN').value) || 0;
-                if(cn > 60) insertCounter('满载而归', Math.min((cn-60)*3, 360), 'p');
+                if(cn > 60) insertCounter('满载而归（藏品 ' + cn + ' 个）', Math.min((cn-60)*3, 360), 'p');
                 if(document.getElementById('xzAlpha').checked) insertCounter('先行者-双沙盘', 180, 'p');
                 if(document.getElementById('xzGodCivil').checked) insertCounter('先行者-神明文明', 240, 'p');
                 if(document.getElementById('xzAutopsy').checked) insertCounter('先行者-无效验尸', 180, 'p');
                 let hl = parseInt(document.getElementById('huntLayer').value) || 0;
-                if(hl > 0) insertCounter('谁才是猎物', hl*60, 'p');
+                if(hl > 0) insertCounter('谁才是猎物（追猎 ' + hl + ' 层）', hl*60, 'p');
             }
 
             // ===== 团队积分 =====
@@ -2690,6 +2702,20 @@ const OP_AVATARS = {
                                   .map(function(it){ return it.label.replace('结局·',''); });
             var runCleared = runEndings.some(function(e){ return e.indexOf('畸症') > -1; });
             var myOps = (opArr() || []).slice();
+            // 队长模式原始数据（写入提交明细，供审核核对；仅按队长提交时生效）
+            var capMode = (identity === 'captain');
+            var capNum = function(id){ let el = document.getElementById(id); return el ? (parseInt(el.value) || 0) : 0; };
+            var capChk = function(id){ let el = document.getElementById(id); return !!(el && el.checked); };
+            var capInfo = {
+                mode: capMode,
+                elite: capMode ? capNum('eliteFight') : 0,
+                collect: capMode ? capNum('collectN') : 0,
+                hunt: capMode ? capNum('huntLayer') : 0,
+                srcKey: capMode ? capNum('srcKeyN') : 0,
+                xzAlpha: capMode && capChk('xzAlpha'),
+                xzGodCivil: capMode && capChk('xzGodCivil'),
+                xzAutopsy: capMode && capChk('xzAutopsy')
+            };
             // 本场选手结果（专题页据此显示 个人分 / 完赛 / 实际抓位）
             if (!st.results || typeof st.results !== 'object') st.results = {};
             st.results[pname] = {
@@ -2707,6 +2733,7 @@ const OP_AVATARS = {
                 grabbed: runCleared ? myOps : [],
                 ncGrabs: runCleared ? (keepNC || []) : myOps,
                 endings: runEndings,
+                captain: capInfo,
                 finished: true
             };
             // 队长登记
