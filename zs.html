@@ -1530,12 +1530,14 @@ OP_LIST.forEach(function(o){ OP_RAR[o.name] = o.rar; });
 // 惰性解析：主体代码可先跑完、先把选手名单渲染出来，头像在后台继续下载。
 let OP_AVATARS = null;
 function loadOpAvatars(){
-    if (OP_AVATARS) return OP_AVATARS;
+    if (OP_AVATARS !== null) return OP_AVATARS;
+    let el = document.getElementById("OP_AVATARS_DATA");
+    if (!el) return {};                 // 数据块在文档末尾，尚未解析：先返回空，且不缓存
     try {
-        let el = document.getElementById('OP_AVATARS_DATA');
-        OP_AVATARS = el ? JSON.parse(el.textContent) : {};
-    } catch (e) { OP_AVATARS = {}; }
-    return OP_AVATARS;
+        let o = JSON.parse(el.textContent);
+        if (o && typeof o === "object") { OP_AVATARS = o; return OP_AVATARS; }
+    } catch (e) {}
+    return {};                          // 解析失败也不缓存，稍后可重试
 }
 
         // ===== 抓取干员：可搜索下拉 =====
